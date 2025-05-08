@@ -20,6 +20,11 @@ dependencies = [
     "watchfiles >= 1.0.5"
 ]
 
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "Operating System :: OS Independent",
+]
+
 [project.scripts]
 fasttk = "fasttk.dev:_console"
 
