@@ -44,7 +44,7 @@ class Scale(Node):
             "scale_length": "length"
         })
         st_args = self._style_repr.props_map({
-            "foreground": "darkcolor",
+            "border_width": "borderwidth",
             "background": "background"
         })
         orient = self._style_repr.bar_orientation

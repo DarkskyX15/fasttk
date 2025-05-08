@@ -9,6 +9,8 @@ class Scrollbar(Node):
     _v_style: str
     _h_style: str
 
+    _widget_instance: ttk.Scrollbar
+
     def __init__(
         self,
         *,

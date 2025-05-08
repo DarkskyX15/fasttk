@@ -24,7 +24,7 @@ CURSORS: TypeAlias = Literal[
 # For all available colors in Tcl,
 # See: https://www.tcl-lang.org/man/tcl8.6/TkCmd/colors.htm
 COLORS: TypeAlias = Literal[
-    'alice blue', 'antique white', 'agua', 'aquamarine', 'azure', 'beige',
+    'alice blue', 'antique white', 'aqua', 'aquamarine', 'azure', 'beige',
     'bisque', 'black', 'blanched almond', 'blue', 'blue violet', 'brown',
     'burlywood', 'cadet blue', 'chartreuse', 'chocolate', 'coral',
     'cornflower blue', 'cornsilk', 'crymson', 'cyan', 'dark blue', 'dark cyan',
@@ -185,6 +185,7 @@ class Style(TypedDict, total=False):
     combo_background: COLORS | str | tuple[int, int, int]
 
     scale_length: int
+    spin_wrap: bool
 
 
 _anchor_mapping = {
@@ -285,6 +286,7 @@ class StyleRepr:
     scale_length: int | None
     text_wrap: str
     text_height: int | None
+    spinbox_wrap: bool
 
     def __init__(self, style_sheet: Style, parent_style: Style):
         # layout analyze
@@ -345,6 +347,9 @@ class StyleRepr:
 
         # text props
         self.text_height = style_sheet.get("text_height", None)
+
+        # spinbox wrap
+        self.spinbox_wrap = style_sheet.get("spin_wrap", False)
 
 
 
