@@ -1,0 +1,27 @@
+[build-system]
+requires = ["setuptools>=42", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "fasttk"
+version = "0.1.1"
+description = "Build user interface with tkinter in a simple and fast way."
+readme = "README.md"
+requires-python = ">=3.9"
+
+authors = [
+    { name="Darksky", email="darkskyx@foxmail.com" }
+]
+
+urls = { "Homepage" = "https://github.com/DarkskyX15/fasttk" }
+
+dependencies = [
+    "pillow >= 11.2.1",
+    "watchfiles >= 1.0.5"
+]
+
+[project.scripts]
+fasttk = "fasttk.dev:_console"
+
+[tool.setuptools.packages.find]
+where = ["."]
