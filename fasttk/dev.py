@@ -5,6 +5,7 @@ import logging
 import threading
 import watchfiles
 import importlib
+import argparse
 
 from fasttk.tkvm import ftk
 
@@ -101,6 +102,56 @@ def start_dev_server(
             "Exception while starting dev server:", exc_info=True
         )
 
-def _console() -> None:
-    # TODO command entry point
-    print("Hello from console.")
+def _console():
+    parser = argparse.ArgumentParser(
+        description="Start FastTk dev server."
+    )
+
+    parser.add_argument(
+        "module_path",
+        type=str,
+        help="input module path"
+    )
+
+    parser.add_argument(
+        "-c", "--class",
+        type=str,
+        default=None,
+        help="specify the class of main component"
+    )
+
+    parser.add_argument(
+        "-s", "--size",
+        type=str,
+        default=None,
+        help="specify the size of the dev window"
+    )
+
+    parser.add_argument(
+        "-t", "--title",
+        type=str,
+        default=None,
+        help="specify the title of the dev window"
+    )
+
+    parser.add_argument(
+        "-b", "--background",
+        type=str,
+        default=None,
+        help="specify the background of the dev window"
+    )
+
+    cmd_args = parser.parse_args()
+
+    args = {}
+    args["src"] = cmd_args.module_path
+    if cls_name := getattr(cmd_args, "class"):
+        args["cls_name"] = cls_name
+    if cmd_args.size:
+        args["size"] = tuple(map(int, cmd_args.size.split('x')))
+    if cmd_args.title:
+        args["title"] = cmd_args.title
+    if cmd_args.background:
+        args["background"] = cmd_args.background
+    
+    start_dev_server(**args)
