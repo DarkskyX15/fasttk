@@ -8,6 +8,7 @@ from abc import ABC, abstractmethod
 from fasttk.style import Style, StyleRepr
 from fasttk.tools import Props, Selector
 
+# TODO Support subclass cache
 
 class StylesManager:
     _instance: "StylesManager"

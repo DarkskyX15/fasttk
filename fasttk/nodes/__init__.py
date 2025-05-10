@@ -10,8 +10,12 @@ from .combobox import Combobox
 from .scale import Scale
 from .text import Text
 from .spinbox import Spinbox
+from .treeview import Treeview, TreeviewColumn, TreeviewItem
 
 __all__ = (
+    "TreeviewItem",
+    "TreeviewColumn",
+    "Treeview",
     "Spinbox",
     "Text",
     "Scale",

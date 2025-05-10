@@ -2,6 +2,7 @@
 import atexit
 import logging
 from tkinter import *
+from tkinter import ttk
 from threading import Event as TEvent
 from uuid import UUID, uuid4 as random_uuid
 from typing import TypeVar, Coroutine, Any, Callable, Never
@@ -32,6 +33,7 @@ class FastTk:
 
     def __init__(self):
         self._tk = Tk()
+        ttk.Style().theme_use("clam")
         self._window_map = {}
         self._worker = AsyncWorker(self._tk)
     

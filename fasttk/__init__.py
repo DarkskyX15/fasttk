@@ -41,6 +41,9 @@ from fasttk.tkvm import ftk
 from fasttk.nodes import *
 
 __all__ = (
+    "TreeviewItem",
+    "TreeviewColumn",
+    "Treeview",
     "Spinbox",
     "Text",
     "Scale",

@@ -33,7 +33,7 @@ class Radiobutton(Node, Generic[_T]):
         value: _T = 0,
         checked: bool = False,
         disabled: bool = False,
-        on_pressed: Callable[[], Any] | None = None,
+        on_click: Callable[[], Any] | None = None,
         style: Style | None = None
     ):
         super().__init__(
@@ -48,7 +48,7 @@ class Radiobutton(Node, Generic[_T]):
         self._available = not disabled
         self._value = json.dumps(value)
         self._checked = checked
-        self._command = on_pressed
+        self._command = on_click
         self._group = group
 
     def __build__(self, master: tk.Misc, component: Component, window) -> None:

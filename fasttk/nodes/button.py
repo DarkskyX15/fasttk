@@ -20,7 +20,7 @@ class Button(Node):
         *,
         text: str | None = None,
         image: str | None = None,
-        on_pressed: Callable[[], Any] | None = None,
+        on_click: Callable[[], Any] | None = None,
         disabled: bool = False,
         tags: str = "",
         ref: str | None = None,
@@ -35,7 +35,7 @@ class Button(Node):
         self._buffer_text = text or ""
         self._image_url = image
         self._image_ref = None
-        self._command = on_pressed
+        self._command = on_click
         self._available = not disabled
 
     def __build__(self, master: tk.Misc, component, window) -> None:

@@ -60,6 +60,8 @@ RELIEF: TypeAlias = Literal[
     "flat", "groove", "raised", "ridge", "solid", "sunken"
 ]
 
+_Padding: TypeAlias = int | tuple[int, int, int, int] | tuple[int, int] | tuple[int, int, int]
+
 _pre_defined_fonts = set((
     "TkDefaultFont", "TkTextFont", "TkFixedFont", "TkMenuFont",
     "TkHeadingFont", "TkCaptionFont", "TkSmallCaptionFont", "TkIconFont",
@@ -78,18 +80,24 @@ class Style(TypedDict, total=False):
     display: Literal["pack", "place", "grid"]
 
     # margin - In pack/grid container only
-    margin: int | tuple[int, int, int, int] | tuple[int, int] | tuple[int, int, int]
+    margin: _Padding
     margin_top: int
     margin_left: int
     margin_right: int
     margin_bottom: int
 
     # padding
-    padding: int | tuple[int, int, int, int] | tuple[int, int] | tuple[int, int, int]
+    padding: _Padding
     padding_top: int
     padding_left: int
     padding_right: int
     padding_bottom: int
+
+    item_padding: _Padding
+    item_padding_top: int
+    item_padding_left: int
+    item_padding_right: int
+    item_padding_bottom: int
 
     # Pack child params
     expand: bool
@@ -160,6 +168,9 @@ class Style(TypedDict, total=False):
 
     foreground: COLORS | str | tuple[int, int, int]
     background: COLORS | str | tuple[int, int, int]
+    field_background: COLORS | str | tuple[int, int, int]
+    item_foreground: COLORS | str | tuple[int, int, int]
+
     image_height: int
     image_width: int
     image_scale: float
@@ -186,6 +197,35 @@ class Style(TypedDict, total=False):
 
     scale_length: int
     spin_wrap: bool
+
+    treeview_height: int
+    treeview_show: Literal["tree", "columns", "all"]
+    treeview_select: Literal["single", "multiple", "none"]
+    treeview_indent: int
+    treeview_row_height: int
+    heading_background: COLORS | str | tuple[int, int, int]
+    heading_font: str | Literal[
+        "TkDefaultFont", "TkTextFont", "TkFixedFont", "TkMenuFont",
+        "TkHeadingFont", "TkCaptionFont", "TkSmallCaptionFont", "TkIconFont",
+        "TkTooltipFont"
+    ]
+    heading_font_size: int
+    heading_font_unit: Literal["pixel", "pound"]
+    heading_font_weight: Literal["normal", "bold"]
+    heading_font_variant: tuple[Literal["italic", "underlined", "overstrike"], ...]
+
+    indicator_size: int
+    indicator_margin: _Padding
+    indicator_margin_top: int
+    indicator_margin_left: int
+    indicator_margin_right: int
+    indicator_margin_bottom: int
+
+    cell_padding: _Padding
+    cell_padding_top: int
+    cell_padding_left: int
+    cell_padding_right: int
+    cell_padding_bottom: int
 
 
 _anchor_mapping = {
@@ -233,6 +273,9 @@ class StyleRepr:
     margin_x: tuple[int, int]
     margin_y: tuple[int, int]
     padding: tuple[int, int, int, int]
+    item_padding: tuple[int, int, int, int]
+    indicator_margin: tuple[int, int, int, int]
+    cell_padding: tuple[int, int, int, int]
 
     # pack
     pack_side: Literal['left', 'right', 'top', 'bottom']
@@ -261,11 +304,15 @@ class StyleRepr:
     cursor: str
     take_focus: bool
     use_font: font.Font | None
+    heading_use_font: font.Font | None
     compound_mode: Literal[
         "text", "image", "center", "top", "bottom", "left", "right", "none"
     ]
     foreground: str | None
     background: str | None
+    field_background: str | None
+    heading_background: str | None
+    item_foreground: str | None
     image_size: tuple[int, int]
     image_scale: float
     compound_anchor: str
@@ -287,22 +334,28 @@ class StyleRepr:
     text_wrap: str
     text_height: int | None
     spinbox_wrap: bool
+    treeview_select: str
+    treeview_show: str
+    treeview_height: int | None
+    treeview_indent: int | None
+    treeview_row_height: int | None
+    indicator_size: int | None
 
     def __init__(self, style_sheet: Style, parent_style: Style):
         # layout analyze
         self.layout = parent_style.get("display", None) or "place"
         if self.layout == "pack":
             self.extract_margin(style_sheet)
-            self.extract_padding(style_sheet)
+            self.padding = self.extract_padding(style_sheet, "padding")
             self.extract_pack_side(parent_style)
             self.extract_pack_params(style_sheet, parent_style)
         elif self.layout == "grid":
             self.stick = _stick_mapping[style_sheet.get("stick", "none")]
             self.extract_margin(style_sheet)
-            self.extract_padding(style_sheet)
+            self.padding = self.extract_padding(style_sheet, "padding")
             self.extract_grid_span(style_sheet)
         else:
-            self.extract_padding(style_sheet)
+            self.padding = self.extract_padding(style_sheet, "padding")
             self.extract_place_coord(style_sheet)
         # container analyze
         self.container = style_sheet.get("display", None) or "place"
@@ -313,10 +366,23 @@ class StyleRepr:
         self.take_focus = style_sheet.get("take_focus", False)
         self.compound_mode = style_sheet.get("compound_mode", "center")
         self.extract_font(style_sheet)
+        self.extract_font(
+            style_sheet,
+            font="heading_font",
+            font_size="heading_font_size",
+            font_unit="heading_font_unit",
+            font_weight="heading_font_weight",
+            font_variant="heading_font_variant",
+            target="heading_use_font"
+        )
 
-        # label props
         self.foreground = self.extract_color(style_sheet.get("foreground", None))
         self.background = self.extract_color(style_sheet.get("background", None))
+        self.field_background = self.extract_color(style_sheet.get("field_background", None))
+        self.heading_background = self.extract_color(style_sheet.get("heading_background", None))
+        self.item_foreground = self.extract_color(style_sheet.get("item_foreground", None))
+
+        # label props
         self.label_justify = style_sheet.get("text_align", "center")
         self.extract_text_wrap(style_sheet)
         self.relief = style_sheet.get("relief", "flat")
@@ -351,6 +417,14 @@ class StyleRepr:
         # spinbox wrap
         self.spinbox_wrap = style_sheet.get("spin_wrap", False)
 
+        # treeview props
+        self.extract_treeview(style_sheet)
+        self.treeview_indent = style_sheet.get("treeview_indent", None)
+        self.treeview_row_height = style_sheet.get("treeview_row_height", None)
+        self.item_padding = self.extract_padding(style_sheet, "item_padding")
+        self.indicator_margin = self.extract_padding(style_sheet, "indicator_margin")
+        self.indicator_size = style_sheet.get("indicator_size", None)
+        self.cell_padding = self.extract_padding(style_sheet, "cell_padding")
 
 
     def props_map(self, name_mapping: dict[str, str]) -> dict[str, Any]:
@@ -403,32 +477,12 @@ class StyleRepr:
         self.pack_side = _pack_direction_mapping.get(direction)
 
     def extract_margin(self, style: Style) -> None:
-        margin = style.get("margin", (0, 0, 0, 0))
-        if isinstance(margin, int):
-            margin = [margin] * 4
-        elif isinstance(margin, tuple):
-            length = len(margin)
-            if length == 2:
-                margin = [margin[0], margin[1], margin[0], margin[1]]
-            elif length == 3:
-                margin = [margin[0], margin[1], margin[2], margin[1]]
-            elif length <= 1:
-                margin = [0, 0, 0, 0]
-            elif length == 4:
-                margin = list(margin)
-            else:
-                margin = list(margin[0:4])
-        else:
-            margin = [0, 0, 0, 0]
-        for index, key in enumerate(
-            ("margin_top", "margin_right", "margin_bottom", "margin_left")
-        ):
-            if (n := style.get(key, -1)) >= 0: margin[index] = n
+        margin = self.extract_padding(style, "margin")
         self.margin_x = (margin[3], margin[1])
         self.margin_y = (margin[0], margin[2])
-
-    def extract_padding(self, style: Style) -> None:
-        padding = style.get("padding", (0, 0, 0, 0))
+    
+    def extract_padding(self, style: Style, prefix: str) -> tuple[int, int, int, int]:
+        padding = style.get(prefix, (0, 0, 0, 0))
         if isinstance(padding, int):
             padding = [padding] * 4
         elif isinstance(padding, tuple):
@@ -445,12 +499,11 @@ class StyleRepr:
                 padding = list(padding[0:4])
         else:
             padding = [0, 0, 0, 0]
-        for index, key in enumerate(
-            ("padding_top", "padding_right", "padding_bottom", "padding_left")
-        ):
+        for index, key in enumerate(("_top", "_right", "_bottom", "_left")):
+            key = prefix + key
             if (n := style.get(key, -1)) >= 0: padding[index] = n
-        self.padding = (padding[3], padding[0], padding[1], padding[2])
-    
+        return (padding[3], padding[0], padding[1], padding[2])
+
     # grid extraction
 
     def extract_grid_container(self, style: Style) -> None:
@@ -526,9 +579,15 @@ class StyleRepr:
 
     # font extraction
 
-    def extract_font(self, style: Style) -> None:
-        self.use_font = None
-        font_spec = style.get("font", "")
+    def extract_font(self, style: Style, **src_kws: str) -> None:
+        src_kws.setdefault("font", "font")
+        src_kws.setdefault("font_size", "font_size")
+        src_kws.setdefault("font_unit", "font_unit")
+        src_kws.setdefault("font_weight", "font_weight")
+        src_kws.setdefault("font_variant", "font_variant")
+        src_kws.setdefault("target", "use_font")
+        setattr(self, src_kws["target"], None)
+        font_spec = style.get(src_kws["font"], "")
         if not font_spec: return None
         if font_spec in _pre_defined_fonts:
             target_font = _constructed_fonts.get(font_spec, None)
@@ -537,11 +596,11 @@ class StyleRepr:
                 _constructed_fonts[font_spec] = target_font
             self.use_font = target_font
         else:
-            size = style.get("font_size", 10)
-            unit = style.get("font_unit", "pixel")
+            size = style.get(src_kws["font_size"], 10)
+            unit = style.get(src_kws["font_unit"], "pixel")
             size = size if unit == "pound" else -size
-            weight = style.get("font_weight", "normal")
-            variants = style.get("font_variant", ())
+            weight = style.get(src_kws["font_weight"], "normal")
+            variants = style.get(src_kws["font_variant"], ())
             variant_no = 0
             slant = "roman"
             overstrike = False
@@ -564,7 +623,7 @@ class StyleRepr:
                     name=font_repr
                 )
                 _constructed_fonts[font_repr] = target_font
-            self.use_font = target_font
+            setattr(self, src_kws["target"], target_font)
     
     # color extraction
 
@@ -602,6 +661,25 @@ class StyleRepr:
         else:
             self.label_wrap = None
             self.text_wrap = wrap
+
+    # treeview extraction
+    def extract_treeview(self, style: Style) -> None:
+        self.treeview_height = style.get("treeview_height", None)
+        select_mode = style.get("treeview_select", "single")
+        show = style.get("treeview_show", "all")
+        if select_mode == "single":
+            self.treeview_select = "browse"
+        elif select_mode == "multiple":
+            self.treeview_select = "extended"
+        else:
+            self.treeview_select = "none"
+        if show == "all":
+            self.treeview_show = "tree headings"
+        elif show == "columns":
+            self.treeview_show = "headings"
+        else:
+            self.treeview_show = "tree"
+
 
 
 if __name__ == '__main__':

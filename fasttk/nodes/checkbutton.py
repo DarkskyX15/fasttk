@@ -33,7 +33,7 @@ class Checkbutton(Node, Generic[_T]):
         off_value: _T = False,
         checked: bool = False,
         disabled: bool = False,
-        on_pressed: Callable[[], Any] | None = None,
+        on_click: Callable[[], Any] | None = None,
         style: Style | None = None
     ):
         super().__init__(
@@ -49,7 +49,7 @@ class Checkbutton(Node, Generic[_T]):
         self._on_value = json.dumps(on_value)
         self._off_value = json.dumps(off_value)
         self._checked = checked
-        self._command = on_pressed
+        self._command = on_click
 
     def __build__(self, master: tk.Misc, component, window) -> None:
         if self._image_url:
