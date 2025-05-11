@@ -78,7 +78,7 @@ class Checkbutton(Node, Generic[_T]):
         args["image"] = self._image_ref
         args["onvalue"] = self._on_value
         args["offvalue"] = self._off_value
-        args["style"] = StylesManager().use_style("TCheckbutton", **st_args)
+        args["style"] = StylesManager().use_style("TCheckbutton", st_args)
         self._widget_instance = ttk.Checkbutton(master, **args)
         self._text_variable = tk.StringVar(
             self._widget_instance, self._buffer_text

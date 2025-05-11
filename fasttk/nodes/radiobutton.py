@@ -77,7 +77,7 @@ class Radiobutton(Node, Generic[_T]):
         args["command"] = self._command
         args["image"] = self._image_ref
         args["value"] = self._value
-        args["style"] = StylesManager().use_style("TRadiobutton", **st_args)
+        args["style"] = StylesManager().use_style("TRadiobutton", st_args)
         self._widget_instance = ttk.Radiobutton(master, **args)
 
         self._text_variable = tk.StringVar(

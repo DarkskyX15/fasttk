@@ -50,7 +50,7 @@ class Scale(Node):
         orient = self._style_repr.bar_orientation
         args["style"] = StylesManager().use_style(
             "Vertical.TScale" if orient == "vertical" else "Horizontal.TScale",
-            **st_args
+            st_args
         )
         args["orient"] = orient
         args["from_"] = self._start_at

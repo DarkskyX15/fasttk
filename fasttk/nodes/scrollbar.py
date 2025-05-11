@@ -31,8 +31,8 @@ class Scrollbar(Node):
         })
         orient = self._style_repr.bar_orientation
         s = StylesManager()
-        self._v_style = s.use_style("Vertical.TScrollbar", **st_args)
-        self._h_style = s.use_style("Horizontal.TScrollbar", **st_args)
+        self._v_style = s.use_style("Vertical.TScrollbar", st_args)
+        self._h_style = s.use_style("Horizontal.TScrollbar", st_args)
         args["style"] = self._v_style if orient == "vertical" else self._h_style
         args["orient"] = orient
         self._widget_instance = ttk.Scrollbar(master, **args)

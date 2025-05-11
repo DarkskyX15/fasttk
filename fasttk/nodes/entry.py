@@ -53,7 +53,7 @@ class Entry(Node):
             "padding": "padding",
             "relief": "relief"
         })
-        args["style"] = StylesManager().use_style("TEntry", **st_args)
+        args["style"] = StylesManager().use_style("TEntry", st_args)
         self._widget_instance = ttk.Entry(master, **args)
         self._text_variable = tk.StringVar(
             self._widget_instance, self._text_buffer

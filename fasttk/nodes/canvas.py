@@ -29,7 +29,7 @@ class Canvas(Node):
             "background": "background"
         })
         
-        args["style"] = StylesManager().use_style("TCanvas", **st_args)
+        args["style"] = StylesManager().use_style("TCanvas", st_args)
         self._widget_instance = ttk.Scale(master, **args)
 
     @property

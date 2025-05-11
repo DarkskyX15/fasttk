@@ -99,7 +99,7 @@ class Spinbox(Node):
             "background": "background",
             "padding": "padding"
         })
-        args["style"] = StylesManager().use_style("TSpinbox", **st_args)
+        args["style"] = StylesManager().use_style("TSpinbox", st_args)
         if self._values:
             args["values"] = self._values
         else:

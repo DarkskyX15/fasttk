@@ -382,16 +382,14 @@ class Treeview(Node):
         cell_args = self._style_repr.props_map({
             "cell_padding": "padding",
         })
-        
-        top_style = StylesManager().get_identifier() + ".Treeview"
-        s = ttk.Style()
-        s.configure(top_style, None, **st_args)
-        s.configure(f"{top_style}.Heading", None, **head_args)
-        s.configure(f"{top_style}.Item", None, **item_args)
-        s.configure(f"{top_style}.Cell", None, **cell_args)
 
         args["columns"] = self._column_names
-        args["style"] = top_style
+        args["style"] = StylesManager().use_style(
+            "Treeview", st_args,
+            Heading=head_args,
+            Item=item_args,
+            Cell=cell_args
+        )
         self._widget_instance = ttk.Treeview(master, **args)
         del self._column_names
 

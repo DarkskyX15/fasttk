@@ -62,7 +62,7 @@ class Button(Node):
             "compound_mode": "compound",
             "relief": "relief"
         })
-        args["style"] = StylesManager().use_style("TButton", **st_args)
+        args["style"] = StylesManager().use_style("TButton", st_args)
         if self._command: args["command"] = self._command
         if self._image_ref: args["image"] = self._image_ref
         self._widget_instance = ttk.Button(master, **args)

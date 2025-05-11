@@ -28,7 +28,7 @@ class Frame(Node):
             "take_focus": "takefocus"
         })
         args["style"] = StylesManager().use_style(
-            "TFrame", background=self._style_repr.background
+            "TFrame", {"background": self._style_repr.background}
         )
         self._widget_instance = ttk.Frame(master, **args)
         if self._style_repr.container == "grid":

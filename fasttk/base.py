@@ -8,15 +8,12 @@ from abc import ABC, abstractmethod
 from fasttk.style import Style, StyleRepr
 from fasttk.tools import Props, Selector
 
-# TODO Support subclass cache
-
 class StylesManager:
     _instance: "StylesManager"
     _inited: bool
 
     _style_db: ttk.Style
     _identifier: int
-    _style_cache: dict[str, list[tuple[dict[str, Any], str]]]
     
     def __new__(cls):
         if not hasattr(cls, "_instance"):
@@ -29,7 +26,6 @@ class StylesManager:
             self._inited = True
             self._style_db = ttk.Style()
             self._identifier = 1000
-            self._style_cache = {}
 
     def get_identifier(self) -> str:
         value = str(self._identifier)
@@ -42,27 +38,19 @@ class StylesManager:
     def use_style(
         self, 
         src: str,
-        **options: Any
+        options: dict[str, Any],
+        **subclasses: Any
     ) -> str:
-        cache = self._style_cache.get(src, [])
-        if not cache:
-            self._style_cache[src] = cache
-        for option in cache:
-            same = True
-            for key, val in option[0].items():
-                if val != options.get(key, None):
-                    same = False
-                    break
-            if same:
-                return option[1]
         style_name = f"{self.get_identifier()}.{src}"
+        for cls, sub_options in subclasses.items():
+            self._style_db.configure(
+                f"{style_name}.{cls}", None, **sub_options
+            )
         self._style_db.configure(style_name, None, **options)
-        cache.append((options, style_name))
         return style_name
 
     def _reset(self):
-        self._identifier = 1000
-        self._style_cache.clear()
+        pass
 
 # == Base Node & Component Definitions ==
 

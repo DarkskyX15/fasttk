@@ -71,7 +71,7 @@ class Combobox(Node):
             "padding": "padding"
         })
         args["values"] = self._values
-        args["style"] = StylesManager().use_style("TCombobox", **st_args)
+        args["style"] = StylesManager().use_style("TCombobox", st_args)
         self._widget_instance = ttk.Combobox(master, **args)
         self._text_variable = tk.StringVar(
             self._widget_instance, self._text_buffer
