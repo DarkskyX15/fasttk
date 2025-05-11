@@ -189,7 +189,7 @@ class Style(TypedDict, total=False):
     spin_wrap: bool
 
     treeview_height: int
-    treeview_show: Literal["tree", "columns", "all"]
+    treeview_show: Literal["no-headings", "columns", "all"]
     treeview_select: Literal["single", "multiple", "none"]
     treeview_indent: int
     treeview_row_height: int
