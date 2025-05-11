@@ -98,7 +98,7 @@ class Style(TypedDict, total=False):
 
     # Pack container params
     pack_direction: Literal["column", "column_reverse", "row", "row_reverse"]
-    align_items: Literal["left", "right", "center", "stretch"]
+    align_items: Literal["left", "right", "center", "stretch", "top", "bottom"]
     spread_items: bool
 
     # Grid
@@ -126,7 +126,7 @@ class Style(TypedDict, total=False):
     stick: Literal[
         "left", "right", "top", "bottom",
         "horizontal", "vertical",
-        "detach-left", "detach-right", "detach-top", "detach-bottom",
+        "detach_left", "detach_right", "detach_top", "detach_bottom",
         "all", "none"
     ]
 
@@ -170,9 +170,9 @@ class Style(TypedDict, total=False):
     text_width: int
     text_height: int
     compound_position: Literal[
-        "top-left", "top-right", "top",
+        "top_left", "top_right", "top",
         "left", "right", "center",
-        "bottom-left", "bottom-right", "bottom"
+        "bottom_left", "bottom_right", "bottom"
     ]
 
     relief: RELIEF
@@ -189,7 +189,7 @@ class Style(TypedDict, total=False):
     spin_wrap: bool
 
     treeview_height: int
-    treeview_show: Literal["no-headings", "columns", "all"]
+    treeview_show: Literal["no_headings", "columns", "all"]
     treeview_select: Literal["single", "multiple", "none"]
     treeview_indent: int
     treeview_row_height: int
@@ -215,14 +215,14 @@ class Style(TypedDict, total=False):
 
 
 _anchor_mapping = {
-    "top-left": "nw",
-    "top-right": "ne",
+    "top_left": "nw",
+    "top_right": "ne",
     "top": "n",
     "left": "w",
     "right": "e",
     "center": "center",
-    "bottom-left": "sw",
-    "bottom-right": "se",
+    "bottom_left": "sw",
+    "bottom_right": "se",
     "bottom": "s"
 }
 
@@ -240,10 +240,10 @@ _stick_mapping = {
     "bottom": "s",
     "horizontal": "we",
     "vertical": "ns",
-    "detach-left": "nse",
-    "detach-right": "nsw",
-    "detach-top": "swe",
-    "detach-bottom": "nwe",
+    "detach_left": "nse",
+    "detach_right": "nsw",
+    "detach_top": "swe",
+    "detach_bottom": "nwe",
     "all": "nswe",
     "none": ""
 }
@@ -447,16 +447,16 @@ class StyleRepr:
         if not x_expand:
             # X axis
             if x_axis:
-                if parent_align == "left":
+                if parent_align == "top":
                     self.pack_anchor = "n"
-                elif parent_align == "right":
+                elif parent_align == "bottom":
                     self.pack_anchor = "s"
             # Y axis
             else:
                 if parent_align == "left":
-                    self.pack_anchor = "e"
-                elif parent_align == "right":
                     self.pack_anchor = "w"
+                elif parent_align == "right":
+                    self.pack_anchor = "e"
 
     def extract_pack_side(self, style: Style) -> None:
         direction = style.get("pack_direction", "column")
