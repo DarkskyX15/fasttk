@@ -92,7 +92,8 @@ class Spinbox(Node):
         args = self._style_repr.props_map({
             "cursor": "cursor",
             "take_focus": "takefocus",
-            "spinbox_wrap": "wrap"
+            "spinbox_wrap": "wrap",
+            "use_font": "font"
         })
         st_args = self._style_repr.props_map({
             "foreground": "foreground",

@@ -62,12 +62,6 @@ RELIEF: TypeAlias = Literal[
 
 _Padding: TypeAlias = int | tuple[int, int, int, int] | tuple[int, int] | tuple[int, int, int]
 
-_pre_defined_fonts = set((
-    "TkDefaultFont", "TkTextFont", "TkFixedFont", "TkMenuFont",
-    "TkHeadingFont", "TkCaptionFont", "TkSmallCaptionFont", "TkIconFont",
-    "TkTooltipFont"
-))
-
 _constructed_fonts: dict[str, font.Font] = {}
 
 class Style(TypedDict, total=False):
@@ -156,11 +150,7 @@ class Style(TypedDict, total=False):
         "text", "image", "center", "top", "bottom", "left", "right", "none"
     ]
     
-    font: str | Literal[
-        "TkDefaultFont", "TkTextFont", "TkFixedFont", "TkMenuFont",
-        "TkHeadingFont", "TkCaptionFont", "TkSmallCaptionFont", "TkIconFont",
-        "TkTooltipFont"
-    ]
+    font: str
     font_size: int
     font_unit: Literal["pixel", "pound"]
     font_weight: Literal["normal", "bold"]
@@ -204,11 +194,7 @@ class Style(TypedDict, total=False):
     treeview_indent: int
     treeview_row_height: int
     heading_background: COLORS | str | tuple[int, int, int]
-    heading_font: str | Literal[
-        "TkDefaultFont", "TkTextFont", "TkFixedFont", "TkMenuFont",
-        "TkHeadingFont", "TkCaptionFont", "TkSmallCaptionFont", "TkIconFont",
-        "TkTooltipFont"
-    ]
+    heading_font: str
     heading_font_size: int
     heading_font_unit: Literal["pixel", "pound"]
     heading_font_weight: Literal["normal", "bold"]
@@ -589,41 +575,34 @@ class StyleRepr:
         setattr(self, src_kws["target"], None)
         font_spec = style.get(src_kws["font"], "")
         if not font_spec: return None
-        if font_spec in _pre_defined_fonts:
-            target_font = _constructed_fonts.get(font_spec, None)
-            if not target_font:
-                target_font = font.nametofont(font_spec)
-                _constructed_fonts[font_spec] = target_font
-            self.use_font = target_font
-        else:
-            size = style.get(src_kws["font_size"], 10)
-            unit = style.get(src_kws["font_unit"], "pixel")
-            size = size if unit == "pound" else -size
-            weight = style.get(src_kws["font_weight"], "normal")
-            variants = style.get(src_kws["font_variant"], ())
-            variant_no = 0
-            slant = "roman"
-            overstrike = False
-            underlined = False
-            if "italic" in variants:
-                slant = "italic"
-                variant_no += 1
-            if "overstrike" in variants:
-                overstrike = True
-                variant_no += 2
-            if "underlined" in variants:
-                underlined = True
-                variant_no += 4
-            font_repr = font_spec + str(size) + weight + str(variant_no)
-            target_font = _constructed_fonts.get(font_repr, None)
-            if not target_font:
-                target_font = font.Font(
-                    family=font_spec, size=size, slant=slant, weight=weight,
-                    overstrike=overstrike, underline=underlined,
-                    name=font_repr
-                )
-                _constructed_fonts[font_repr] = target_font
-            setattr(self, src_kws["target"], target_font)
+        size = style.get(src_kws["font_size"], 10)
+        unit = style.get(src_kws["font_unit"], "pixel")
+        size = size if unit == "pound" else -size
+        weight = style.get(src_kws["font_weight"], "normal")
+        variants = style.get(src_kws["font_variant"], ())
+        variant_no = 0
+        slant = "roman"
+        overstrike = False
+        underlined = False
+        if "italic" in variants:
+            slant = "italic"
+            variant_no += 1
+        if "overstrike" in variants:
+            overstrike = True
+            variant_no += 2
+        if "underlined" in variants:
+            underlined = True
+            variant_no += 4
+        font_repr = font_spec + str(size) + weight + str(variant_no)
+        target_font = _constructed_fonts.get(font_repr, None)
+        if not target_font:
+            target_font = font.Font(
+                family=font_spec, size=size, slant=slant, weight=weight,
+                overstrike=overstrike, underline=underlined,
+                name=font_repr
+            )
+            _constructed_fonts[font_repr] = target_font
+        setattr(self, src_kws["target"], target_font)
     
     # color extraction
 
