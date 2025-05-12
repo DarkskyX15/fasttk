@@ -69,10 +69,9 @@ def _serve(
             component = getattr(entrance, cls_name, None)
             if not component:
                 raise ImportError(f"Export entry point '{cls_name}' not found in module '{src}'.")
-        except Exception as e:
-            logger.warning("Exception while reloading, skip this reload.")
-        else:
             ftk.mount_component(ftk._tk, component)
+        except Exception as e:
+            logger.warning("Exception while reloading, skip this reload:", exc_info=True)
 
     try:
         ftk.main_window(
@@ -101,6 +100,8 @@ def start_dev_server(
         logger.error(
             "Exception while starting dev server:", exc_info=True
         )
+        pass_event.set()
+        stop_event.set()
 
 def _console():
     parser = argparse.ArgumentParser(

@@ -4,9 +4,10 @@ from PIL import Image, ImageTk
 from tkinter import ttk
 from fasttk.base import Node, StylesManager, Component
 from fasttk.style import Style
-from typing import Callable, Any, Self, Literal, TypeAlias, overload
+from typing import Callable, Any, Self, Literal, TypeAlias, overload, Iterable
 from .scrollbar import Scrollbar
 from ..style import Style, StyleRepr, _anchor_mapping
+
 
 ANCHOR: TypeAlias = Literal[
     "top-left", "top", "top-right",
@@ -47,6 +48,15 @@ class TreeviewItem:
         items = [self._treeview._item_map[name] for name in item_names]
         return items
 
+    def focus(self) -> None:
+        self._treeview._widget_instance.focus(self._id)
+
+    def select(self) -> None:
+        self._treeview._widget_instance.selection_add(self._id)
+
+    def cancel(self) -> None:
+        self._treeview._widget_instance.selection_remove(self._id)
+
     @property
     def name(self) -> str:
         return self["#0"]
@@ -65,16 +75,23 @@ class TreeviewItem:
 
     def tags(self, new_tags: list[str] | None = None) -> list[str] | None:
         if new_tags:
+            self._treeview._widget_instance.item(self._id, tags=new_tags)
+        else:
             _tags = self._treeview._widget_instance.item(self._id, "tags")
             return _tags or []
-        else:
-            self._treeview._widget_instance.item(self._id, tags=new_tags)
+
+    def items(self) -> dict[str, Any]:
+        return self._treeview._widget_instance.set(self._id)
 
     def __getitem__(self, column_id: str) -> str:
         return self._treeview._widget_instance.set(self._id, column_id)
     
     def __setitem__(self, column_id: str, value: str) -> None:
         return self._treeview._widget_instance.set(self._id, column_id, value)
+
+    def __repr__(self) -> str:
+        values = self._treeview._widget_instance.set(self._id)
+        return f"TreeviewItem<{self._id}>{values}"
 
 
 class TreeviewColumn:
@@ -107,7 +124,7 @@ class TreeviewColumn:
         stretch: bool = True,
         item_anchor: ANCHOR = "center",
         heading_anchor: ANCHOR = "center",
-        on_click: Callable[[str], Any] | None = None,
+        on_click: Callable[["TreeviewColumn"], Any] | None = None,
         visible: bool = True
     ):
         self._id = id
@@ -127,12 +144,12 @@ class TreeviewColumn:
             self._image_size = (image[1], image[2])
         elif isinstance(image, str):
             self._image_src = image
-        self._visible = visible
+        self._visible = True if id == "#0" else visible
     
 
     def __click_hook__(self) -> None:
         if self._on_click:
-            self._on_click(self._id)
+            self._on_click(self)
 
     def _bind_treeview(self, tv: "Treeview", idx: int) -> None:
         self._index = idx
@@ -204,6 +221,8 @@ class TreeviewColumn:
     
     @visible.setter
     def visible(self, value: bool) -> None:
+        if self._id == "#0":
+            return None
         if value != self._visible:
             self._visible = value
             self._bind_tv._update_visible()
@@ -220,6 +239,7 @@ class Treeview(Node):
     _column_names: tuple[str, ...]
     _item_map: dict[str, TreeviewItem]
     _item_tags: set[str]
+    _tag_images: dict[str, ImageTk.PhotoImage]
     _disabled: bool
 
     _widget_instance: ttk.Treeview
@@ -231,7 +251,7 @@ class Treeview(Node):
         ref: str | None = None,
         scrollbar_x: str | None = None,
         scrollbar_y: str | None = None,
-        on_select: Callable[[TreeviewItem], Any] | None = None,
+        on_select: Callable[[list[TreeviewItem]], Any] | None = None,
         on_open: Callable[[TreeviewItem], Any] | None = None,
         on_close: Callable[[TreeviewItem], Any] | None = None,
         disabled: bool = False,
@@ -240,13 +260,26 @@ class Treeview(Node):
         super().__init__(tags=tags, type="treeview", ref=ref, style=style)
         self._columns = []
         self._on_select = on_select
-        self._on_open = on_open # TODO event bindings
+        self._on_open = on_open
         self._on_close = on_close
         self._bind_sbx = scrollbar_x
         self._bind_sby = scrollbar_y
         self._item_map = {}
         self._item_tags = set()
         self._disabled = disabled
+        self._tag_images = {}
+
+    def __select_hook__(self, ev):
+        if not self._disabled and self._on_select:
+            self._on_select(self.selection)
+
+    def __open_hook__(self, ev):
+        if self._on_open:
+            self._on_open(self.focus)
+
+    def __close_hook__(self, ev):
+        if self._on_close:
+            self._on_close(self.focus)
 
     def set_columns(self, *columns: TreeviewColumn) -> Self:
         names = []
@@ -315,7 +348,7 @@ class Treeview(Node):
                 width *= style_repr.image_scale
                 height *= style_repr.image_scale
                 data = data.resize((width, height))
-            image_data = data
+            image_data = ImageTk.PhotoImage(data)
         else:
             image_data = None
             
@@ -324,7 +357,9 @@ class Treeview(Node):
             "foreground": "foreground",
             "use_font": "font"
         })
-        if image_data: options["image"] = image_data
+        if image_data:
+            options["image"] = image_data
+            self._tag_images[tag] = image_data
         self._widget_instance.tag_configure(tag, **options)
         self._item_tags.add(tag)
 
@@ -340,6 +375,7 @@ class Treeview(Node):
             if index >= 0:
                 current_tags.pop(index)
         self._item_tags.remove(tag)
+        self._tag_images.pop(tag)
 
 
     def _update_visible(self) -> None:
@@ -347,6 +383,7 @@ class Treeview(Node):
         for column in self._columns:
             if column._visible:
                 display.append(column._id)
+        display.pop(0)
         self._widget_instance.configure(displaycolumns=display)
 
 
@@ -398,6 +435,11 @@ class Treeview(Node):
             self._widget_instance.heading(column._id, **column._heading_args())
             self._widget_instance.column(column._id, **column._column_args())
         
+        # bind events
+        self._widget_instance.bind("<<TreeviewSelect>>", self.__select_hook__)
+        self._widget_instance.bind("<<TreeviewOpen>>", self.__open_hook__)
+        self._widget_instance.bind("<<TreeviewClose>>", self.__close_hook__)
+
         if self._disabled:
             self._widget_instance.state(["disabled"])
 
@@ -437,3 +479,23 @@ class Treeview(Node):
         if value != self._disabled:
             self._widget_instance.state(["disabled" if value else "!disabled"])
             self._disabled = value
+
+    @property
+    def selection(self) -> list[TreeviewItem]:
+        return [
+            self._item_map[item_name]
+            for item_name in self._widget_instance.selection()
+        ]
+
+    @selection.setter
+    def selection(self, items: Iterable[TreeviewItem]) -> None:
+        self._widget_instance.selection_set((item._id for item in items))
+
+    @property
+    def focus(self) -> TreeviewItem | None:
+        value = self._widget_instance.focus()
+        return self._item_map[value] if value else None
+
+    @focus.setter
+    def focus(self, item: TreeviewItem) -> None:
+        self._widget_instance.focus(item._id)
