@@ -73,7 +73,11 @@ class Text(Node):
             "use_font": "font",
             "border_width": "borderwidth",
             "relief": "relief",
-            "text_wrap": "wrap"
+            "text_wrap": "wrap",
+            "select_foreground": "selectforeground",
+            "select_background": "selectbackground",
+            "insert_color": "insertbackground",
+            "insert_width": "insertwidth"
         })
         args["padx"] = self._style_repr.padding[0]
         args["pady"] = self._style_repr.padding[1]

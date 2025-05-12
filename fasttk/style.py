@@ -160,6 +160,11 @@ class Style(TypedDict, total=False):
     background: COLORS | str | tuple[int, int, int]
     field_background: COLORS | str | tuple[int, int, int]
     item_foreground: COLORS | str | tuple[int, int, int]
+    select_foreground: COLORS | str | tuple[int, int, int]
+    select_background: COLORS | str | tuple[int, int, int]
+
+    insert_width: int
+    insert_color: COLORS | str | tuple[int, int, int]
 
     image_height: int
     image_width: int
@@ -299,6 +304,9 @@ class StyleRepr:
     field_background: str | None
     heading_background: str | None
     item_foreground: str | None
+    select_foreground: str | None
+    select_background: str | None
+    insert_color: str | None
     image_size: tuple[int, int]
     image_scale: float
     compound_anchor: str
@@ -319,6 +327,7 @@ class StyleRepr:
     scale_length: int | None
     text_wrap: str
     text_height: int | None
+    insert_width: int | None
     spinbox_wrap: bool
     treeview_select: str
     treeview_show: str
@@ -367,6 +376,9 @@ class StyleRepr:
         self.field_background = self.extract_color(style_sheet.get("field_background", None))
         self.heading_background = self.extract_color(style_sheet.get("heading_background", None))
         self.item_foreground = self.extract_color(style_sheet.get("item_foreground", None))
+        self.select_background = self.extract_color(style_sheet.get("select_background", None))
+        self.select_foreground = self.extract_color(style_sheet.get("select_foreground", None))
+        self.insert_color = self.extract_color(style_sheet.get("insert_color", None))
 
         # label props
         self.label_justify = style_sheet.get("text_align", "center")
@@ -399,6 +411,7 @@ class StyleRepr:
 
         # text props
         self.text_height = style_sheet.get("text_height", None)
+        self.insert_width = style_sheet.get("insert_width", None)
 
         # spinbox wrap
         self.spinbox_wrap = style_sheet.get("spin_wrap", False)
