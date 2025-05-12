@@ -20,21 +20,22 @@ class Frame(Node):
         return self
     
     def __build__(self, master: tk.Misc, component, window) -> None:
-        args = self._style_repr.props_map({
+        args = self._normal_repr.props_map({
             "padding": "padding",
             "relief": "relief",
             "border_width": "borderwidth",
             "cursor": "cursor",
             "take_focus": "takefocus"
         })
-        args["style"] = StylesManager().use_style(
-            "TFrame", {"background": self._style_repr.background}
-        )
+        st_args = self.__style_map__({
+            "background": "background"
+        })
+        args["style"] = StylesManager().use_style("TFrame", st_args)
         self._widget_instance = ttk.Frame(master, **args)
-        if self._style_repr.container == "grid":
-            for index, setting in self._style_repr.row_config.items():
+        if self._normal_repr.container == "grid":
+            for index, setting in self._normal_repr.row_config.items():
                 self._widget_instance.rowconfigure(index, setting)
-            for index, setting in self._style_repr.column_config.items():
+            for index, setting in self._normal_repr.column_config.items():
                 self._widget_instance.columnconfigure(index, setting)
 
     @property

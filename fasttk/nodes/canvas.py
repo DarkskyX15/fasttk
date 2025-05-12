@@ -19,17 +19,16 @@ class Canvas(Node):
         super().__init__(tags=tags, type="canvas", ref=ref, style=style)
 
     def __build__(self, master: tk.Misc, component, window) -> None:
-        args = self._style_repr.props_map({
+        args = self._normal_repr.props_map({
             "cursor": "cursor",
             "take_focus": "takefocus",
             "scale_length": "length"
         })
-        st_args = self._style_repr.props_map({
+        style_args = self.__style_map__({
             "border_width": "borderwidth",
             "background": "background"
         })
-        
-        args["style"] = StylesManager().use_style("TCanvas", st_args)
+        args["style"] = StylesManager().use_style("TCanvas", style_args)
         self._widget_instance = ttk.Scale(master, **args)
 
     @property

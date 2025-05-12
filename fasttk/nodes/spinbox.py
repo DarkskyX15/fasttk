@@ -89,13 +89,13 @@ class Spinbox(Node):
         self._last_event = -1
 
     def __build__(self, master: tk.Misc, component, window) -> None:
-        args = self._style_repr.props_map({
+        args = self._normal_repr.props_map({
             "cursor": "cursor",
             "take_focus": "takefocus",
             "spinbox_wrap": "wrap",
             "use_font": "font"
         })
-        st_args = self._style_repr.props_map({
+        st_args = self.__style_map__({
             "foreground": "foreground",
             "background": "background",
             "padding": "padding"

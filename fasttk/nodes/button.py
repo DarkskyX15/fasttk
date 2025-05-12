@@ -42,10 +42,10 @@ class Button(Node):
         if self._image_url:
             self._image_ref = self.__load_image__(
                 self._image_url,
-                self._style_repr.image_size,
-                self._style_repr.image_scale
+                self._normal_repr.image_size,
+                self._normal_repr.image_scale
             )
-        args = self._style_repr.props_map({
+        args = self._normal_repr.props_map({
             "compound_mode": "compound",
             "cursor": "cursor",
             "label_underline": "underline",
@@ -53,7 +53,7 @@ class Button(Node):
             "button_default": "default",
             "label_width": "width"
         })
-        st_args = self._style_repr.props_map({
+        style_args = self.__style_map__({
             "compound_anchor": "anchor",
             "background": "background",
             "foreground": "foreground",
@@ -62,7 +62,7 @@ class Button(Node):
             "compound_mode": "compound",
             "relief": "relief"
         })
-        args["style"] = StylesManager().use_style("TButton", st_args)
+        args["style"] = StylesManager().use_style("TButton", style_args)
         if self._command: args["command"] = self._command
         if self._image_ref: args["image"] = self._image_ref
         self._widget_instance = ttk.Button(master, **args)
@@ -102,7 +102,7 @@ class Button(Node):
             self._widget_instance.configure(image=None)
 
         self._image_ref = self.__load_image__(
-            url_or_image, self._style_repr.image_size, self._style_repr.image_scale
+            url_or_image, self._normal_repr.image_size, self._normal_repr.image_scale
         )
         self._image_url = url_or_image
         self._widget_instance.configure(image=self._image_ref)

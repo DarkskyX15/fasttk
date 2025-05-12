@@ -56,7 +56,7 @@ class Combobox(Node):
             self._on_change(text)
 
     def __build__(self, master: tk.Misc, component, window) -> None:
-        args = self._style_repr.props_map({
+        args = self._normal_repr.props_map({
             "cursor": "cursor",
             "take_focus": "takefocus",
             "combobox_height": "height",
@@ -64,7 +64,7 @@ class Combobox(Node):
             "label_justify": "justify",
             "use_font": "font"
         })
-        st_args = self._style_repr.props_map({
+        st_args = self.__style_map__({
             "background": "background",
             "foreground": "foreground",
             "foreground": "lightcolor",
@@ -86,15 +86,15 @@ class Combobox(Node):
         popdown = self._widget_instance.tk.call(
             "ttk::combobox::PopdownWindow", self._widget_instance._w
         ) + ".f.l"
-        if font := self._style_repr.use_font:
+        if font := self._normal_repr.use_font:
             self._widget_instance.tk.call(
                 popdown, "configure", "-font", FontDescriptor(font)
             )
-        if color := self._style_repr.combo_background:
+        if color := self._normal_repr.combo_background:
             self._widget_instance.tk.call(
                 popdown, "configure", "-background", color
             )
-        if color := self._style_repr.combo_foreground:
+        if color := self._normal_repr.combo_foreground:
             self._widget_instance.tk.call(
                 popdown, "configure", "-foreground", color
             )

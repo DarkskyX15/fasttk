@@ -39,7 +39,7 @@ class Entry(Node):
             self._on_change(self._text_variable.get())
 
     def __build__(self, master: tk.Misc, component, window) -> None:
-        args = self._style_repr.props_map({
+        args = self._normal_repr.props_map({
             "use_font": "font",
             "foreground": "foreground",
             "cursor": "cursor",
@@ -48,7 +48,7 @@ class Entry(Node):
             "entry_show": "show",
             "entry_width": "width"
         })
-        st_args = self._style_repr.props_map({
+        st_args = self.__style_map__({
             "background": "background",
             "padding": "padding",
             "relief": "relief"

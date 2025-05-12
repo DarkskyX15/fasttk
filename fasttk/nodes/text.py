@@ -62,7 +62,7 @@ class Text(Node):
             self._on_select(text)
 
     def __build__(self, master: tk.Misc, component, window) -> None:
-        args = self._style_repr.props_map({
+        args = self._normal_repr.props_map({
             "cursor": "cursor",
             "take_focus": "takefocus",
             "scale_length": "length",
@@ -79,8 +79,8 @@ class Text(Node):
             "insert_color": "insertbackground",
             "insert_width": "insertwidth"
         })
-        args["padx"] = self._style_repr.padding[0]
-        args["pady"] = self._style_repr.padding[1]
+        args["padx"] = self._normal_repr.padding[0]
+        args["pady"] = self._normal_repr.padding[1]
         self._widget_instance = tk.Text(master, **args)
         if self._on_change:
             self._widget_instance.bind(

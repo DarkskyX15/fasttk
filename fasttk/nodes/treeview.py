@@ -389,7 +389,7 @@ class Treeview(Node):
 
     def __build__(self, master: tk.Misc, component, window) -> None:
         # build treeview widget
-        args = self._style_repr.props_map({
+        args = self._normal_repr.props_map({
             "cursor": "cursor",
             "take_focus": "takefocus",
             "padding": "padding",
@@ -397,7 +397,7 @@ class Treeview(Node):
             "treeview_height": "height",
             "treeview_select": "selectmode"
         })
-        st_args = self._style_repr.props_map({
+        st_args = self.__style_map__({
             "foreground": "foreground",
             "background": "background",
             "field_background": "fieldbackground",
@@ -405,18 +405,18 @@ class Treeview(Node):
             "treeview_indent": "indent",
             "treeview_row_height": "rowheight",
         })
-        head_args = self._style_repr.props_map({
+        head_args = self.__style_map__({
             "relief": "relief",
             "heading_use_font": "font",
             "heading_background": "background"
         })
-        item_args = self._style_repr.props_map({
+        item_args = self.__style_map__({
             "item_foreground": "foreground",
             "item_padding": "padding",
             "indicator_margin": "indicatormargins",
             "indicator_size": "indicatorsize"
         })
-        cell_args = self._style_repr.props_map({
+        cell_args = self.__style_map__({
             "cell_padding": "padding",
         })
 

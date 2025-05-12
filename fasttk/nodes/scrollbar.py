@@ -21,15 +21,15 @@ class Scrollbar(Node):
         super().__init__(tags=tags, type="scrollbar", ref=ref, style=style)
 
     def __build__(self, master: tk.Misc, component, window) -> None:
-        args = self._style_repr.props_map({
+        args = self._normal_repr.props_map({
             "cursor": "cursor",
             "take_focus": "takefocus"
         })
-        st_args = self._style_repr.props_map({
+        st_args = self.__style_map__({
             "foreground": "foreground",
             "background": "background"
         })
-        orient = self._style_repr.bar_orientation
+        orient = self._normal_repr.bar_orientation
         s = StylesManager()
         self._v_style = s.use_style("Vertical.TScrollbar", st_args)
         self._h_style = s.use_style("Horizontal.TScrollbar", st_args)

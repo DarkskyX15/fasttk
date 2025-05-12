@@ -38,16 +38,16 @@ class Scale(Node):
         self._on_change(float(value))
 
     def __build__(self, master: tk.Misc, component, window) -> None:
-        args = self._style_repr.props_map({
+        args = self._normal_repr.props_map({
             "cursor": "cursor",
             "take_focus": "takefocus",
             "scale_length": "length"
         })
-        st_args = self._style_repr.props_map({
+        st_args = self.__style_map__({
             "border_width": "borderwidth",
             "background": "background"
         })
-        orient = self._style_repr.bar_orientation
+        orient = self._normal_repr.bar_orientation
         args["style"] = StylesManager().use_style(
             "Vertical.TScale" if orient == "vertical" else "Horizontal.TScale",
             st_args

@@ -60,6 +60,13 @@ RELIEF: TypeAlias = Literal[
     "flat", "groove", "raised", "ridge", "solid", "sunken"
 ]
 
+STATE: TypeAlias = Literal[
+    "normal", "active", "disabled", "focus", "pressed", "selected",
+    "background", "readonly", "alternate", "invalid", "!active",
+    "!disabled", "!focus", "!pressed", "!selected", "!background",
+    "!readonly", "!alternate", "!invalid"
+]
+
 _Padding: TypeAlias = int | tuple[int, int, int, int] | tuple[int, int] | tuple[int, int, int]
 
 _constructed_fonts: dict[str, font.Font] = {}
@@ -69,6 +76,9 @@ class Style(TypedDict, total=False):
     # selector
     # button.top scaler.y.x.z
     selector: str
+
+    # states
+    states: tuple[STATE, ...] | STATE
 
     # display - Only on Frame
     display: Literal["pack", "place", "grid"]
@@ -162,6 +172,8 @@ class Style(TypedDict, total=False):
     item_foreground: COLORS | str | tuple[int, int, int]
     select_foreground: COLORS | str | tuple[int, int, int]
     select_background: COLORS | str | tuple[int, int, int]
+    light_color: COLORS | str | tuple[int, int, int]
+    dark_color: COLORS | str | tuple[int, int, int]
 
     insert_width: int
     insert_color: COLORS | str | tuple[int, int, int]

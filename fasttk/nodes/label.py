@@ -30,10 +30,10 @@ class Label(Node):
         if self._image_url:
             self._image_ref = self.__load_image__(
                 self._image_url,
-                self._style_repr.image_size,
-                self._style_repr.image_scale
+                self._normal_repr.image_size,
+                self._normal_repr.image_scale
             )
-        args = self._style_repr.props_map({
+        args = self._normal_repr.props_map({
             "background": "background",
             "foreground": "foreground",
             "compound_mode": "compound",
@@ -84,7 +84,7 @@ class Label(Node):
             self._widget_instance.configure(image=None)
 
         self._image_ref = self.__load_image__(
-            url_or_image, self._style_repr.image_size, self._style_repr.image_scale
+            url_or_image, self._normal_repr.image_size, self._normal_repr.image_scale
         )
         self._image_url = url_or_image
         self._widget_instance.configure(image=self._image_ref)

@@ -35,24 +35,64 @@ class StylesManager:
         self._identifier += 1
         return result
 
+    def single_config(
+        self,
+        name: str,
+        options: dict[str, Any],
+        states: dict[tuple[str, ...], dict[str, Any]]
+    ) -> None:
+        self._style_db.configure(name, None, **options)
+        builds: dict[str, list[tuple[Any, ...]]] = {}
+        for state, styles in states.items():
+            for option_name, value in styles.items():
+                if not (option_spec := builds.get(option_name, [])):
+                    builds[option_name] = option_spec
+                option_spec.append((*state, value))
+        self._style_db.map(name, None, **builds)
+
     def use_style(
         self, 
         src: str,
-        options: dict[str, Any],
-        **subclasses: Any
+        style_args: dict[tuple[str, ...], dict[str, Any]],
+        **subclasses: dict[tuple[str, ...], dict[str, Any]],
     ) -> str:
+        st_args = style_args.copy()
+        options = st_args.pop(("normal", ))
         style_name = f"{self.get_identifier()}.{src}"
-        for cls, sub_options in subclasses.items():
-            self._style_db.configure(
-                f"{style_name}.{cls}", None, **sub_options
-            )
-        self._style_db.configure(style_name, None, **options)
+        self.single_config(style_name, options, st_args)
+        for cls, states in subclasses.items():
+            opts = states.pop(("normal", ))
+            self.single_config(f"{style_name}.{cls}", opts, states)
         return style_name
 
     def _reset(self):
         pass
 
 # == Base Node & Component Definitions ==
+
+_states_map: dict[str, int] = {
+    "normal": 0,
+    "pressed": 1,
+    "!pressed": 2,
+    "disable": 3,
+    "!disabled": 4,
+    "focus": 5,
+    "!focus": 6,
+    "active": 7,
+    "!active": 8,
+    "selected": 9,
+    "!selected": 10,
+    "background": 11,
+    "!background": 12,
+    "readonly": 13,
+    "!readonly": 14,
+    "alternate": 15,
+    "!alternate": 16,
+    "invalid": 17,
+    "!invalid": 18
+}
+
+_states_set: set[str] = set(_states_map.keys())
 
 class Component(ABC):
 
@@ -99,6 +139,29 @@ class Component(ABC):
     def __vtk_apply_styles__(self) -> None:
         styles = self.__vtk_component_styles__ or []
         struct = self.__vtk_component_node__
+
+        # styles post process
+        for style in styles:
+            if (states := style.get("states", None)) is None:
+                states = ("normal", )
+                style["states"] = states
+            elif isinstance(states, str):
+                style["states"] = (states, )
+            elif isinstance(states, tuple):
+                temp: list[str] = []
+                for state in states:
+                    if state in _states_set:
+                        temp.append(state)
+                temp.sort(key=lambda v: _states_map[v])
+                style["states"] = tuple(temp) if temp else ("normal", )
+            else:
+                style["states"] = ("normal", )
+        styles.sort(
+            key=lambda style: sum(
+                (_states_map[state] for state in style["states"])
+            )
+        )
+        
         for style in styles:
             selector = style.get("selector", "")
             if not selector: continue
@@ -186,8 +249,9 @@ class Node(ABC):
     _bind_master: tk.Misc
     _bind_window: tk.Toplevel
     _inline_style: Style | None
-    _use_style: Style | None
-    _style_repr: StyleRepr
+    _use_styles: dict[tuple[str, ...], Style]
+    _style_repr_map: dict[tuple[str, ...], StyleRepr]
+    _normal_repr: StyleRepr
     _node_tags: set[str]
     _node_type: str
     _node_ref: str | None
@@ -205,7 +269,8 @@ class Node(ABC):
         super().__init__()
         self._node_type = type
         self._inline_style = style
-        self._use_style = predef_style.copy()
+        self._use_styles = { ("normal", ): predef_style.copy() }
+        self._style_repr_map = {}
         self._node_tags = set([tag for tag in tags.split()])
         self._node_ref = ref
         self._children = []
@@ -222,7 +287,11 @@ class Node(ABC):
 
     def __vtk_apply_style__(self, selector: Selector, style: Style) -> None:
         if selector.check(self._node_type, self._node_tags):
-            self._use_style.update(style)
+            states = style["states"]
+            if (state_style := self._use_styles.get(states, None)) is None:
+                state_style = self._use_styles[("normal", )].copy()
+                self._use_styles[states] = state_style
+            state_style.update(style)
         for item in self._children:
             if isinstance(item, Node):
                 item.__vtk_apply_style__(selector, style)
@@ -230,10 +299,13 @@ class Node(ABC):
                 item.__vtk_apply_styles__()
 
     def __vtk_repr_styles__(self, parent_style: Style) -> None:
-        self._use_style.update(self._inline_style or {})
-        self._style_repr = StyleRepr(self._use_style, parent_style)
+        normal_style = self._use_styles[("normal", )]
+        normal_style.update(self._inline_style or {})
+        for state, style in self._use_styles.items():
+            self._style_repr_map[state] = StyleRepr(style, parent_style)
+        self._normal_repr = self._style_repr_map[("normal", )]
         for child in self._children:
-            child.__vtk_repr_styles__(self._use_style)
+            child.__vtk_repr_styles__(normal_style)
 
     def __vtk_build_widgets__(
         self,
@@ -264,9 +336,16 @@ class Node(ABC):
                 child.__vtk_cross_binding__(component)
 
 
+    def __style_map__(self, name_mapping: dict[str, str]) -> dict[tuple[str, ...], dict[str, Any]]:
+        result = {}
+        for state, st_repr in self._style_repr_map.items():
+            result[state] = st_repr.props_map(name_mapping)
+        return result
+
     def __layout_widget__(self) -> None:
-        if self._style_repr.layout == "pack":
-            args = self._style_repr.props_map({
+        normal_style = self._style_repr_map[("normal", )]
+        if normal_style.layout == "pack":
+            args = normal_style.props_map({
                 "margin_x": "padx",
                 "margin_y": "pady",
                 "pack_anchor": "anchor",
@@ -275,17 +354,17 @@ class Node(ABC):
                 "pack_expand": "expand"
             })
             self._widget_instance.pack(args)
-        elif self._style_repr.layout == "grid":
-            args = self._style_repr.props_map({
+        elif normal_style.layout == "grid":
+            args = normal_style.props_map({
                 "margin_x": "padx",
                 "margin_y": "pady",
                 "stick": "sticky"
             })
-            args["row"], args["rowspan"] = self._style_repr.row_spec
-            args["column"], args["columnspan"] = self._style_repr.column_spec
+            args["row"], args["rowspan"] = normal_style.row_spec
+            args["column"], args["columnspan"] = normal_style.column_spec
             self._widget_instance.grid(args)
         else:
-            args = self._style_repr.props_map({
+            args = normal_style.props_map({
                 "x": "x",
                 "y": "y",
                 "rel_x": "relx",
