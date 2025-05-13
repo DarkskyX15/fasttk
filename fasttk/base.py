@@ -70,11 +70,13 @@ class StylesManager:
 
 # == Base Node & Component Definitions ==
 
+# States Priority Map
+
 _states_map: dict[str, int] = {
     "normal": 0,
     "pressed": 1,
     "!pressed": 2,
-    "disable": 3,
+    "disabled": 3,
     "!disabled": 4,
     "focus": 5,
     "!focus": 6,
@@ -127,7 +129,13 @@ class Component(ABC):
             **self.__vtk_setup_props__._kwargs
         )
         self.__vtk_component_node__ = self.struct()
-        self.__vtk_component_styles__ = self.styles()
+        styles = self.styles()
+        self.__vtk_component_styles__ = []
+        for style in styles:
+            if isinstance(style, (list, tuple)):
+                self.__vtk_component_styles__.extend(style)
+            elif isinstance(style, dict):
+                self.__vtk_component_styles__.append(style)
 
     # Step 2
     def __vtk_set_ref__(self, obj: object) -> None:
@@ -142,28 +150,28 @@ class Component(ABC):
 
         # styles post process
         for style in styles:
-            if (states := style.get("states", None)) is None:
+            if (states := style.get("_states", None)) is None:
                 states = ("normal", )
-                style["states"] = states
+                style["_states"] = states
             elif isinstance(states, str):
-                style["states"] = (states, )
+                style["_states"] = (states, )
             elif isinstance(states, tuple):
                 temp: list[str] = []
                 for state in states:
                     if state in _states_set:
                         temp.append(state)
                 temp.sort(key=lambda v: _states_map[v])
-                style["states"] = tuple(temp) if temp else ("normal", )
+                style["_states"] = tuple(temp) if temp else ("normal", )
             else:
-                style["states"] = ("normal", )
+                style["_states"] = ("normal", )
         styles.sort(
             key=lambda style: sum(
-                (_states_map[state] for state in style["states"])
+                (_states_map[state] for state in style["_states"])
             )
         )
         
         for style in styles:
-            selector = style.get("selector", "")
+            selector = style.get("_selector", "")
             if not selector: continue
             selector = Selector(selector)
             struct.__vtk_apply_style__(selector, style)
@@ -232,7 +240,7 @@ class Component(ABC):
         self.__vtk_component_node__._widget_instance.destroy()
 
     @abstractmethod
-    def styles(self) -> list[Style]:
+    def styles(self) -> list[Style | list[Style]]:
         ...
 
     @abstractmethod
@@ -287,7 +295,7 @@ class Node(ABC):
 
     def __vtk_apply_style__(self, selector: Selector, style: Style) -> None:
         if selector.check(self._node_type, self._node_tags):
-            states = style["states"]
+            states = style["_states"]
             if (state_style := self._use_styles.get(states, None)) is None:
                 state_style = self._use_styles[("normal", )].copy()
                 self._use_styles[states] = state_style

@@ -75,10 +75,10 @@ class Style(TypedDict, total=False):
 
     # selector
     # button.top scaler.y.x.z
-    selector: str
+    _selector: str
 
     # states
-    states: tuple[STATE, ...] | STATE
+    _states: tuple[STATE, ...] | STATE
 
     # display - Only on Frame
     display: Literal["pack", "place", "grid"]
@@ -174,6 +174,8 @@ class Style(TypedDict, total=False):
     select_background: COLORS | str | tuple[int, int, int]
     light_color: COLORS | str | tuple[int, int, int]
     dark_color: COLORS | str | tuple[int, int, int]
+    border_color: COLORS | str | tuple[int, int, int]
+    
 
     insert_width: int
     insert_color: COLORS | str | tuple[int, int, int]
@@ -318,6 +320,7 @@ class StyleRepr:
     item_foreground: str | None
     select_foreground: str | None
     select_background: str | None
+    border_color: str | None
     insert_color: str | None
     image_size: tuple[int, int]
     image_scale: float
@@ -391,6 +394,7 @@ class StyleRepr:
         self.select_background = self.extract_color(style_sheet.get("select_background", None))
         self.select_foreground = self.extract_color(style_sheet.get("select_foreground", None))
         self.insert_color = self.extract_color(style_sheet.get("insert_color", None))
+        self.border_color = self.extract_color(style_sheet.get("border_color", None))
 
         # label props
         self.label_justify = style_sheet.get("text_align", "center")
