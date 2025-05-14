@@ -72,7 +72,13 @@ class Checkbutton(Node, Generic[_T]):
             "use_font": "font",
             "padding": "padding",
             "compound_mode": "compound",
-            "relief": "indicatorrelief"
+            "relief": "indicatorrelief",
+            "indicator_foreground": "indicatorforeground",
+            "indicator_background": "indicatorbackground",
+            "indicator_margin": "indicatormargin",
+            "indicator_size": "indicatorsize",
+            "light_color": "upperbordercolor",
+            "dark_color": "lowerbordercolor"
         })
         args["command"] = self._command
         args["image"] = self._image_ref

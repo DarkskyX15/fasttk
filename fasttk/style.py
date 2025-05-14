@@ -56,6 +56,8 @@ COLORS: TypeAlias = Literal[
     'yellow', 'yellow green'
 ]
 
+_Color: TypeAlias = COLORS | str | tuple[int, int, int]
+
 RELIEF: TypeAlias = Literal[
     "flat", "groove", "raised", "ridge", "solid", "sunken"
 ]
@@ -166,19 +168,21 @@ class Style(TypedDict, total=False):
     font_weight: Literal["normal", "bold"]
     font_variant: tuple[Literal["italic", "underlined", "overstrike"], ...]
 
-    foreground: COLORS | str | tuple[int, int, int]
-    background: COLORS | str | tuple[int, int, int]
-    field_background: COLORS | str | tuple[int, int, int]
-    item_foreground: COLORS | str | tuple[int, int, int]
-    select_foreground: COLORS | str | tuple[int, int, int]
-    select_background: COLORS | str | tuple[int, int, int]
-    light_color: COLORS | str | tuple[int, int, int]
-    dark_color: COLORS | str | tuple[int, int, int]
-    border_color: COLORS | str | tuple[int, int, int]
-    
+    foreground: _Color
+    background: _Color
+    field_background: _Color
+    item_foreground: _Color
+    select_foreground: _Color
+    select_background: _Color
+    light_color: _Color
+    dark_color: _Color
+    border_color: _Color
+    indicator_foreground: _Color
+    indicator_background: _Color
+
 
     insert_width: int
-    insert_color: COLORS | str | tuple[int, int, int]
+    insert_color: _Color
 
     image_height: int
     image_width: int
@@ -201,8 +205,8 @@ class Style(TypedDict, total=False):
     input_width: int
     orientation: Literal['vertical', 'horizontal']
     combo_size: int
-    combo_foreground: COLORS | str | tuple[int, int, int]
-    combo_background: COLORS | str | tuple[int, int, int]
+    combo_foreground: _Color
+    combo_background: _Color
 
     scale_length: int
     spin_wrap: bool
@@ -212,7 +216,7 @@ class Style(TypedDict, total=False):
     treeview_select: Literal["single", "multiple", "none"]
     treeview_indent: int
     treeview_row_height: int
-    heading_background: COLORS | str | tuple[int, int, int]
+    heading_background: _Color
     heading_font: str
     heading_font_size: int
     heading_font_unit: Literal["pixel", "pound"]
@@ -320,8 +324,12 @@ class StyleRepr:
     item_foreground: str | None
     select_foreground: str | None
     select_background: str | None
+    indicator_foreground: str | None
+    indicator_background: str | None
     border_color: str | None
     insert_color: str | None
+    light_color: str | None
+    dark_color: str | None
     image_size: tuple[int, int]
     image_scale: float
     compound_anchor: str
@@ -395,6 +403,10 @@ class StyleRepr:
         self.select_foreground = self.extract_color(style_sheet.get("select_foreground", None))
         self.insert_color = self.extract_color(style_sheet.get("insert_color", None))
         self.border_color = self.extract_color(style_sheet.get("border_color", None))
+        self.indicator_foreground = self.extract_color(style_sheet.get("indicator_foreground", None))
+        self.indicator_background = self.extract_color(style_sheet.get("indicator_background", None))
+        self.light_color = self.extract_color(style_sheet.get("light_color", None))
+        self.dark_color = self.extract_color(style_sheet.get("dark_color", None))
 
         # label props
         self.label_justify = style_sheet.get("text_align", "center")
