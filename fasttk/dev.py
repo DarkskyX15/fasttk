@@ -2,10 +2,11 @@
 import os
 import sys
 import logging
-import threading
-import watchfiles
-import importlib
 import argparse
+import threading
+import importlib
+import watchfiles
+from queue import Queue as TQueue
 
 from fasttk.tkvm import ftk
 
@@ -13,27 +14,30 @@ CWD = os.getcwd()
 
 stop_event = threading.Event()
 pass_event = threading.Event()
-reload_event = threading.Event()
+reload_queue: TQueue[list[str]] = TQueue()
 
 root_logger = logging.getLogger("FastTk")
 logger = logging.getLogger("FastTk.DevServer")
 
-def _watch_worker():
+def _watch_worker(watch_target: str):
 
     logger = logging.getLogger("FastTk.WatchFiles")
-    logger.info(f"Watching files at {CWD}.")
+    logger.info(f"Watching files at '{watch_target}'.")
 
     for changes in watchfiles.watch(
-        CWD, stop_event=stop_event, watch_filter=watchfiles.PythonFilter()
+        watch_target, stop_event=stop_event, watch_filter=watchfiles.PythonFilter()
     ):
+        logger.info(f"Changes detected:")
+        path_list = []
         for file_change in changes:
             change, file = file_change
-            logger.info(f"Detect change '{change.name}' in {file}, reloading...")
-            reload_event.set()
+            logger.info(f" -> {change.name} file at {file}")
+            path_list.append(file)
+        reload_queue.put(path_list)
+
         pass_event.wait()
         logger.info("Reload complete, keep watching.")
         pass_event.clear()
-
 
     logger.info("WatchFiles thread exited.")
 
@@ -45,7 +49,7 @@ def _serve(
     background: str
 ) -> None:
     
-    logger.info(f"Loading window entrance in module {src}")
+    logger.info(f"Loading window entrance in module {src}.")
     
     sys.path.append(CWD)
     entrance = importlib.import_module(src)
@@ -55,17 +59,35 @@ def _serve(
 
     logger.info("Starting FastTk dev server.")
 
+    src_segments = src.split('.')
+    module_dir = os.path.join(CWD, src_segments[0])
+    watch_target = module_dir if os.path.isdir(module_dir) else CWD
     watch_thread = threading.Thread(
-        target=_watch_worker, name="fasttk.WatchFiles"
+        target=_watch_worker, name="fasttk.WatchFiles", args=(watch_target, )
     )
     watch_thread.start()
     
     logger.info("Press Ctrl+C to stop.")
 
-    def reload_callback() -> None:
+    def reload_callback(modules: list[str]) -> None:
+
+        # NOTE This is a brute force reload implementation.
+        # All related modules & packages are removed from sys.modules,
+        # then the entire **top** module/package is **re-imported**.
+        # This may cause performance issues, but avoids manual interpretation of
+        # module relies and some difficult corner cases.
+
         nonlocal entrance
+        reload_target = src_segments[0]
         try:
-            entrance = importlib.reload(entrance)
+            logger.info(f"Reloading module/package '{reload_target}'.")
+            remove_candidates = []
+            for m_name in sys.modules.keys():
+                if m_name.startswith(reload_target):
+                    remove_candidates.append(m_name)
+            for remove in remove_candidates:
+                sys.modules.pop(remove, None)
+            entrance = importlib.import_module(src)
             component = getattr(entrance, cls_name, None)
             if not component:
                 raise ImportError(f"Export entry point '{cls_name}' not found in module '{src}'.")
@@ -77,7 +99,7 @@ def _serve(
         ftk.main_window(
             component_cls, title=title, size=size, background=background
         )
-        ftk._track_reload(reload_event, pass_event, reload_callback)
+        ftk._track_reload(reload_queue, pass_event, reload_callback)
         ftk.mainloop()
         stop_event.set()
     except KeyboardInterrupt:

@@ -3,6 +3,7 @@ import atexit
 import logging
 from tkinter import *
 from tkinter import ttk
+from queue import Queue as TQueue, Empty
 from threading import Event as TEvent
 from uuid import UUID, uuid4 as random_uuid
 from typing import TypeVar, Coroutine, Any, Callable, Never
@@ -27,7 +28,7 @@ class FastTk:
     _tk: Tk
     _window_map: dict[UUID, Toplevel]
     _worker: AsyncWorker
-    _reload_event: TEvent
+    _reload_queue: TQueue[list[str]]
     _pass_event: TEvent
     _import_cb: Callable
 
@@ -67,21 +68,26 @@ class FastTk:
 
     # for dev server
 
-    def _track_reload(self, e_reload: TEvent, e_pass: TEvent, callback: Callable) -> None:
-        self._reload_event = e_reload
+    def _track_reload(self, q_reload: TQueue, e_pass: TEvent, callback: Callable) -> None:
+        self._reload_queue = q_reload
         self._pass_event = e_pass
         self._import_cb = callback
         self._tk.after(50, self._track_reload_call)
     
     def _track_reload_call(self):
-        if self._reload_event.is_set():
+        try:
+            modules = self._reload_queue.get_nowait()
+        except Empty:
+            pass
+        else:
             # reload
             self._remove_all()
-            self._import_cb()
+            self._import_cb(modules)
             # notice
-            self._reload_event.clear()
+            self._reload_queue.task_done()
             self._pass_event.set()
-        self._tk.after(50, self._track_reload_call)
+        finally:
+            self._tk.after(50, self._track_reload_call)
 
     def _remove_all(self):
         _remove_all_components()
