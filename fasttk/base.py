@@ -8,6 +8,32 @@ from abc import ABC, abstractmethod
 from fasttk.style import Style, StyleRepr
 from fasttk.tools import Props, Selector
 
+# States Priority Map
+
+_states_map: dict[str, int] = {
+    "normal": 0,
+    "pressed": 1,
+    "!pressed": 2,
+    "disabled": 3,
+    "!disabled": 4,
+    "focus": 5,
+    "!focus": 6,
+    "active": 7,
+    "!active": 8,
+    "selected": 9,
+    "!selected": 10,
+    "background": 11,
+    "!background": 12,
+    "readonly": 13,
+    "!readonly": 14,
+    "alternate": 15,
+    "!alternate": 16,
+    "invalid": 17,
+    "!invalid": 18
+}
+
+_states_set: set[str] = set(_states_map.keys())
+
 class StylesManager:
     _instance: "StylesManager"
     _inited: bool
@@ -47,7 +73,17 @@ class StylesManager:
             for option_name, value in styles.items():
                 if not (option_spec := builds.get(option_name, [])):
                     builds[option_name] = option_spec
-                option_spec.append((*state, value))
+                option_spec.append((state, value))
+        for specs in builds.values():
+            specs.sort(
+                key=lambda tp: len(tp[0]),
+                reverse=True
+            )
+        builds = {
+            option: [
+                (*states, value) for states, value in specs
+            ] for option, specs in builds.items()
+        }
         self._style_db.map(name, None, **builds)
 
     def use_style(
@@ -69,32 +105,6 @@ class StylesManager:
         pass
 
 # == Base Node & Component Definitions ==
-
-# States Priority Map
-
-_states_map: dict[str, int] = {
-    "normal": 0,
-    "pressed": 1,
-    "!pressed": 2,
-    "disabled": 3,
-    "!disabled": 4,
-    "focus": 5,
-    "!focus": 6,
-    "active": 7,
-    "!active": 8,
-    "selected": 9,
-    "!selected": 10,
-    "background": 11,
-    "!background": 12,
-    "readonly": 13,
-    "!readonly": 14,
-    "alternate": 15,
-    "!alternate": 16,
-    "invalid": 17,
-    "!invalid": 18
-}
-
-_states_set: set[str] = set(_states_map.keys())
 
 class Component(ABC):
 
@@ -164,11 +174,6 @@ class Component(ABC):
                 style["_states"] = tuple(temp) if temp else ("normal", )
             else:
                 style["_states"] = ("normal", )
-        styles.sort(
-            key=lambda style: sum(
-                (_states_map[state] for state in style["_states"])
-            )
-        )
         
         for style in styles:
             selector = style.get("_selector", "")
