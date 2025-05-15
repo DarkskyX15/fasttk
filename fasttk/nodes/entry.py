@@ -27,7 +27,12 @@ class Entry(Node):
         on_change: Callable[[str], None] | None = None,
         style: Style | None = None
     ):
-        super().__init__(tags=tags, type="entry", ref=ref, style=style)
+        super().__init__(
+            tags=tags, type="entry", ref=ref, style=style,
+            predef_style={
+                "cursor": "xterm"
+            }
+        )
         self._text_buffer = text
         self._readonly = readonly
         self._disabled = disabled
@@ -41,7 +46,6 @@ class Entry(Node):
     def __build__(self, master: tk.Misc, component, window) -> None:
         args = self._normal_repr.props_map({
             "use_font": "font",
-            "foreground": "foreground",
             "cursor": "cursor",
             "take_focus": "takefocus",
             "label_justify": "justify",
@@ -49,9 +53,18 @@ class Entry(Node):
             "entry_width": "width"
         })
         st_args = self.__style_map__({
-            "background": "background",
+            "foreground": "foreground",
+            "background": "fieldbackground",
             "padding": "padding",
-            "relief": "relief"
+            "relief": "relief",
+            "insert_width": "insertwidth",
+            "insert_color": "insertcolor",
+            "light_color": "lightcolor",
+            "dark_color": "darkcolor",
+            "border_color": "bordercolor",
+            "border_width": "borderwidth",
+            "select_foreground": "selectforeground",
+            "select_background": "selectbackground"
         })
         args["style"] = StylesManager().use_style("TEntry", st_args)
         self._widget_instance = ttk.Entry(master, **args)
