@@ -236,8 +236,9 @@ class Component(ABC):
         pass
     
     def destroy(self) -> None:
-        _instance_map.pop(self.__vtk_component_uuid__)
-        self.__vtk_component_node__._widget_instance.destroy()
+        _instance_map.pop(self.__vtk_component_uuid__, None)
+        if hasattr(self, "__vtk_component_node__"):
+            self.__vtk_component_node__._widget_instance.destroy()
 
     @abstractmethod
     def styles(self) -> list[Style | list[Style]]:

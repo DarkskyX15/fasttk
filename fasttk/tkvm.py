@@ -100,12 +100,13 @@ class FastTk:
     def main_window(
         self,
         cp: type[Component],
-        props: Props = Props(),
+        props: Props | None = None,
         *,
         title: str = "MainWindow",
         size: tuple[int, int] = (400, 300),
         background: COLORS = "white"
     ) -> None:
+        props = props if props else Props()
         component = cp(props=props)
         self._tk.title(title)
         self._tk.geometry(f"{size[0]}x{size[1]}")
@@ -115,12 +116,13 @@ class FastTk:
     def create_window(
         self,
         cp: type[Component],
-        props: Props = Props(),
+        props: Props | None = None,
         *,
         title: str = "NewWindow",
         size: tuple[int, int] = (400, 300),
         background: COLORS = "white"
     ) -> None:
+        props = props if props else Props()
         window_id = random_uuid()
         window = Toplevel(self._tk)
         window.title(title)

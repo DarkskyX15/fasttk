@@ -65,10 +65,26 @@ class Combobox(Node):
             "use_font": "font"
         })
         st_args = self.__style_map__({
-            "background": "background",
+            "background": "fieldbackground",
             "foreground": "foreground",
-            "foreground": "lightcolor",
-            "padding": "padding"
+            "indicator_background": "background",
+            "indicator_foreground": "arrowcolor",
+            "indicator_size": "arrowsize",
+            "padding": "padding",
+            "border_color": "bordercolor",
+            "light_color": "lightcolor",
+            "dark_color": "darkcolor",
+            "select_foreground": "selectforeground",
+            "select_background": "selectbackground",
+            "insert_width": "insertwidth",
+            "insert_color": "insertcolor"
+        })
+        combo_args = self._normal_repr.props_map({
+            "use_font": "font",
+            "foreground": "foreground",
+            "background": "background",
+            "select_foreground": "selectforeground",
+            "select_background": "selectbackground"
         })
         args["values"] = self._values
         args["style"] = StylesManager().use_style("TCombobox", st_args)
@@ -86,17 +102,11 @@ class Combobox(Node):
         popdown = self._widget_instance.tk.call(
             "ttk::combobox::PopdownWindow", self._widget_instance._w
         ) + ".f.l"
-        if font := self._normal_repr.use_font:
+        if font := combo_args.get("font", None):
+            combo_args["font"] = FontDescriptor(font)
+        for option, value in combo_args.items():
             self._widget_instance.tk.call(
-                popdown, "configure", "-font", FontDescriptor(font)
-            )
-        if color := self._normal_repr.combo_background:
-            self._widget_instance.tk.call(
-                popdown, "configure", "-background", color
-            )
-        if color := self._normal_repr.combo_foreground:
-            self._widget_instance.tk.call(
-                popdown, "configure", "-foreground", color
+                popdown, "configure", f"-{option}", value
             )
         del self._text_buffer
 
