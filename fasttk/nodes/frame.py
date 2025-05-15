@@ -21,14 +21,17 @@ class Frame(Node):
     
     def __build__(self, master: tk.Misc, component, window) -> None:
         args = self._normal_repr.props_map({
-            "padding": "padding",
-            "relief": "relief",
-            "border_width": "borderwidth",
             "cursor": "cursor",
+            "padding": "padding",
             "take_focus": "takefocus"
         })
         st_args = self.__style_map__({
-            "background": "background"
+            "background": "background",
+            "border_color": "bordercolor",
+            "light_color": "lightcolor",
+            "dark_color": "darkcolor",
+            "border_width": "borderwidth",
+            "relief": "relief",
         })
         args["style"] = StylesManager().use_style("TFrame", st_args)
         self._widget_instance = ttk.Frame(master, **args)
