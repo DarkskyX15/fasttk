@@ -392,32 +392,37 @@ class Treeview(Node):
         args = self._normal_repr.props_map({
             "cursor": "cursor",
             "take_focus": "takefocus",
-            "padding": "padding",
             "treeview_show": "show",
             "treeview_height": "height",
             "treeview_select": "selectmode"
         })
         st_args = self.__style_map__({
+            "padding": "padding",
             "foreground": "foreground",
             "background": "background",
             "field_background": "fieldbackground",
             "use_font": "font",
             "treeview_indent": "indent",
             "treeview_row_height": "rowheight",
+            "light_color": "lightcolor",
+            "dark_color": "darkcolor",
+            "border_color": "bordercolor",
+            "relief": "relief"
         })
         head_args = self.__style_map__({
-            "relief": "relief",
             "heading_use_font": "font",
-            "heading_background": "background"
+            "heading_background": "background",
+            "heading_foreground": "foreground",
+            "heading_border_color": "bordercolor",
+            "heading_relief": "relief"
         })
         item_args = self.__style_map__({
-            "item_foreground": "foreground",
             "item_padding": "padding",
             "indicator_margin": "indicatormargins",
             "indicator_size": "indicatorsize"
         })
         cell_args = self.__style_map__({
-            "cell_padding": "padding",
+            "cell_padding": "padding"
         })
 
         args["columns"] = self._column_names

@@ -57,6 +57,11 @@ COLORS: TypeAlias = Literal[
 ]
 
 _Color: TypeAlias = COLORS | str | tuple[int, int, int]
+_Anchor: TypeAlias = Literal[
+    "top_left", "top_right", "top",
+    "left", "right", "center",
+    "bottom_left", "bottom_right", "bottom"
+]
 
 RELIEF: TypeAlias = Literal[
     "flat", "groove", "raised", "ridge", "solid", "sunken"
@@ -171,7 +176,6 @@ class Style(TypedDict, total=False):
     foreground: _Color
     background: _Color
     field_background: _Color
-    item_foreground: _Color
     select_foreground: _Color
     select_background: _Color
     light_color: _Color
@@ -192,11 +196,7 @@ class Style(TypedDict, total=False):
     text_wrap: int | Literal['none', 'char', 'word']
     text_width: int
     text_height: int
-    compound_position: Literal[
-        "top_left", "top_right", "top",
-        "left", "right", "center",
-        "bottom_left", "bottom_right", "bottom"
-    ]
+    compound_position: _Anchor
 
     border_style: RELIEF
     underline: int
@@ -217,12 +217,16 @@ class Style(TypedDict, total=False):
     treeview_select: Literal["single", "multiple", "none"]
     treeview_indent: int
     treeview_row_height: int
+
     heading_background: _Color
+    heading_foreground: _Color
     heading_font: str
     heading_font_size: int
     heading_font_unit: Literal["pixel", "pound"]
     heading_font_weight: Literal["normal", "bold"]
     heading_font_variant: tuple[Literal["italic", "underlined", "overstrike"], ...]
+    heading_border_style: RELIEF
+    heading_border_color: COLORS
 
     indicator_size: int
     indicator_margin: _Padding
@@ -322,7 +326,7 @@ class StyleRepr:
     background: str | None
     field_background: str | None
     heading_background: str | None
-    item_foreground: str | None
+    heading_foreground: str | None
     select_foreground: str | None
     select_background: str | None
     indicator_foreground: str | None
@@ -360,6 +364,9 @@ class StyleRepr:
     treeview_indent: int | None
     treeview_row_height: int | None
     indicator_size: int | None
+
+    heading_relief: str
+    heading_border_color: str | None
 
     def __init__(self, style_sheet: Style, parent_style: Style):
         # layout analyze
@@ -400,7 +407,7 @@ class StyleRepr:
         self.background = self.extract_color(style_sheet.get("background", None))
         self.field_background = self.extract_color(style_sheet.get("field_background", None))
         self.heading_background = self.extract_color(style_sheet.get("heading_background", None))
-        self.item_foreground = self.extract_color(style_sheet.get("item_foreground", None))
+        self.heading_foreground = self.extract_color(style_sheet.get("heading_foreground", None))
         self.select_background = self.extract_color(style_sheet.get("select_background", None))
         self.select_foreground = self.extract_color(style_sheet.get("select_foreground", None))
         self.insert_color = self.extract_color(style_sheet.get("insert_color", None))
@@ -409,6 +416,7 @@ class StyleRepr:
         self.indicator_background = self.extract_color(style_sheet.get("indicator_background", None))
         self.light_color = self.extract_color(style_sheet.get("light_color", None))
         self.dark_color = self.extract_color(style_sheet.get("dark_color", None))
+        self.heading_border_color = self.extract_color(style_sheet.get("heading_border_color", None))
 
         # label props
         self.label_justify = style_sheet.get("text_align", "center")
@@ -449,6 +457,7 @@ class StyleRepr:
 
         # treeview props
         self.extract_treeview(style_sheet)
+        self.heading_relief = style_sheet.get("heading_border_style", "flat")
         self.treeview_indent = style_sheet.get("treeview_indent", None)
         self.treeview_row_height = style_sheet.get("treeview_row_height", None)
         self.item_padding = self.extract_padding(style_sheet, "item_padding")
