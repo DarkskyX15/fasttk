@@ -91,14 +91,24 @@ class Spinbox(Node):
     def __build__(self, master: tk.Misc, component, window) -> None:
         args = self._normal_repr.props_map({
             "cursor": "cursor",
-            "take_focus": "takefocus",
+            "use_font": "font",
             "spinbox_wrap": "wrap",
-            "use_font": "font"
+            "take_focus": "takefocus",
         })
         st_args = self.__style_map__({
             "foreground": "foreground",
-            "background": "background",
-            "padding": "padding"
+            "background": "fieldbackground",
+            "padding": "padding",
+            "border_color": "bordercolor",
+            "light_color": "lightcolor",
+            "dark_color": "darkcolor",
+            "indicator_size": "arrowsize",
+            "select_foreground": "selectforeground",
+            "select_background": "selectbackground",
+            "insert_color": "insertcolor",
+            "insert_width": "insertwidth",
+            "indicator_foreground": "arrowcolor",
+            "indicator_background": "background"
         })
         args["style"] = StylesManager().use_style("TSpinbox", st_args)
         if self._values:
