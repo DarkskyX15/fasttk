@@ -1,9 +1,7 @@
 
 import tkinter as tk
-from tkinter import ttk
-from fasttk.base import Node, StylesManager
+from fasttk.base import Node
 from fasttk.style import Style
-from typing import Callable, Any
 
 class Canvas(Node):
 
@@ -22,14 +20,11 @@ class Canvas(Node):
         args = self._normal_repr.props_map({
             "cursor": "cursor",
             "take_focus": "takefocus",
-            "scale_length": "length"
+            "background": "background",
+            "relief": "relief",
+            "border_width": "borderwidth"
         })
-        style_args = self.__style_map__({
-            "border_width": "borderwidth",
-            "background": "background"
-        })
-        args["style"] = StylesManager().use_style("TCanvas", style_args)
-        self._widget_instance = ttk.Scale(master, **args)
+        self._widget_instance = tk.Canvas(master, **args)
 
     @property
     def widget(self) -> tk.Canvas:
