@@ -59,20 +59,28 @@ class Radiobutton(Node, Generic[_T]):
                 self._normal_repr.image_scale
             )
         args = self._normal_repr.props_map({
-            "compound_mode": "compound",
             "cursor": "cursor",
-            "label_underline": "underline",
             "take_focus": "takefocus",
-            "label_width": "width"
         })
         st_args = self.__style_map__({
-            "compound_anchor": "anchor",
-            "background": "background",
-            "foreground": "foreground",
+            "relief": "relief",
             "use_font": "font",
             "padding": "padding",
+            "label_width": "width",
+            "light_color": "upperbordercolor",
+            "dark_color": "lowerbordercolor",
+            "border_width": "borderwidth",
+            "foreground": "foreground",
+            "background": "background",
+            "label_underline": "underline",
+            "compound_anchor": "anchor",
             "compound_mode": "compound",
-            "relief": "indicatorrelief"
+            "label_wrap": "wraplength",
+            "label_justify": "justify",
+            "indicator_margin": "indicatormargin",
+            "indicator_size": "indicatorsize",
+            "indicator_foreground": "indicatorforeground",
+            "indicator_background": "indicatorbackground",
         })
         args["command"] = self._command
         args["image"] = self._image_ref
