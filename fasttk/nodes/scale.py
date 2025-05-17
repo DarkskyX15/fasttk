@@ -26,7 +26,12 @@ class Scale(Node):
         on_change: Callable[[float], Any] | None = None,
         style: Style | None = None
     ):
-        super().__init__(tags=tags, type="scale", ref=ref, style=style)
+        super().__init__(
+            tags=tags, type="scale", ref=ref, style=style,
+            predef_style={
+                "cursor": "hand2"
+            }
+        )
         self._start_at = start
         self._end_at = end
         self._on_change = on_change
@@ -45,8 +50,15 @@ class Scale(Node):
         })
         st_args = self.__style_map__({
             "border_width": "borderwidth",
-            "background": "background"
+            "foreground": "background",
+            "background": "troughcolor",
+            "border_color": "bordercolor",
+            "light_color": "lightcolor",
+            "dark_color": "darkcolor",
+            "scale_width": "arrowsize",
+            "indicator_size": "sliderlength"
         })
+        st_args[("normal", )]["gripcount"] = 0
         orient = self._normal_repr.bar_orientation
         args["style"] = StylesManager().use_style(
             "Vertical.TScale" if orient == "vertical" else "Horizontal.TScale",

@@ -209,6 +209,7 @@ class Style(TypedDict, total=False):
     combo_background: _Color
 
     scale_length: int
+    scale_width: int
     spin_wrap: bool
 
     treeview_height: int
@@ -348,6 +349,7 @@ class StyleRepr:
     combo_foreground: str | None
     combo_background: str | None
     scale_length: int | None
+    scale_width: int | None
     text_wrap: str
     text_height: int | None
     insert_width: int | None
@@ -436,6 +438,7 @@ class StyleRepr:
 
         # scale props
         self.scale_length = style_sheet.get("scale_length", None)
+        self.scale_width = style_sheet.get("scale_width", None)
 
         # text props
         self.text_height = style_sheet.get("text_height", None)
