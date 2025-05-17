@@ -26,9 +26,15 @@ class Scrollbar(Node):
             "take_focus": "takefocus"
         })
         st_args = self.__style_map__({
-            "foreground": "foreground",
-            "background": "background"
+            "foreground": "background",
+            "background": "troughcolor",
+            "light_color": "lightcolor",
+            "dark_color": "darkcolor",
+            "border_color": "bordercolor",
+            "indicator_size": "arrowsize",
+            "indicator_foreground": "arrowcolor"
         })
+        st_args[("normal", )]["gripcount"] = 0
         orient = self._normal_repr.bar_orientation
         s = StylesManager()
         self._v_style = s.use_style("Vertical.TScrollbar", st_args)
