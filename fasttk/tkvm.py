@@ -12,7 +12,7 @@ from fasttk.style import COLORS
 from fasttk.aworker import AsyncWorker
 from fasttk.base import Component, Props, remove_buffers, _remove_all_components
 
-VERSION = "v0.2.1"
+VERSION = "v0.2.3"
 _T = TypeVar("_T")
 
 def _then(obj: Any) -> None:
