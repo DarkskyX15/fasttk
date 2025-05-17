@@ -2,7 +2,7 @@
 import tkinter as tk
 from PIL import ImageTk
 from tkinter import ttk
-from fasttk.base import Node
+from fasttk.base import Node, StylesManager
 from fasttk.style import Style
 
 class Label(Node):
@@ -34,26 +34,33 @@ class Label(Node):
                 self._normal_repr.image_scale
             )
         args = self._normal_repr.props_map({
-            "background": "background",
-            "foreground": "foreground",
-            "compound_mode": "compound",
             "cursor": "cursor",
+            "take_focus": "takefocus"
+        })
+        st_args = self.__style_map__({
+            "relief": "relief",
+            "use_font": "font",
             "padding": "padding",
+            "label_width": "width",
+            "border_color": "bordercolor",
+            "light_color": "lightcolor",
+            "dark_color": "darkcolor",
+            "border_width": "borderwidth",
+            "foreground": "foreground",
+            "background": "background",
             "label_underline": "underline",
             "compound_anchor": "anchor",
-            "use_font": "font",
-            "relief": "relief",
-            "label_justify": "justify",
+            "compound_mode": "compound",
             "label_wrap": "wraplength",
-            "take_focus": "takefocus",
-            "label_width": "width"
+            "label_justify": "justify"
         })
         args["image"] = self._image_ref
+        args["style"] = StylesManager().use_style("TLabel", st_args)
         self._widget_instance = ttk.Label(master, **args)
         self._text_variable = tk.StringVar(self._widget_instance, self._buffer_text)
         self._widget_instance.configure(textvariable=self._text_variable)
         del self._buffer_text
-        
+
 
     @property
     def widget(self) -> ttk.Label:

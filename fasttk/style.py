@@ -198,7 +198,7 @@ class Style(TypedDict, total=False):
         "bottom_left", "bottom_right", "bottom"
     ]
 
-    relief: RELIEF
+    border_style: RELIEF
     underline: int
     default_button: bool
     input_mask: str
@@ -411,7 +411,7 @@ class StyleRepr:
         # label props
         self.label_justify = style_sheet.get("text_align", "center")
         self.extract_text_wrap(style_sheet)
-        self.relief = style_sheet.get("relief", "flat")
+        self.relief = style_sheet.get("border_style", "flat")
         self.label_underline = style_sheet.get("underline", None)
         self.extract_image(style_sheet)
         self.extract_compound_position(style_sheet)
@@ -558,6 +558,7 @@ class StyleRepr:
                     else:
                         setting[field] = option[1]
                         target[index] = setting
+
         self.row_config = {}
         self.column_config = {}
         decode_and_set(style.get("row_weight", ""), "weight", self.row_config)
