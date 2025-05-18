@@ -13,8 +13,6 @@ authors = [
     { name="Darksky", email="darkskyx@foxmail.com" }
 ]
 
-urls = { "Homepage" = "https://github.com/DarkskyX15/fasttk" }
-
 dependencies = [
     "pillow >= 11.2.1",
     "watchfiles >= 1.0.5"
@@ -24,6 +22,9 @@ classifiers = [
     "Programming Language :: Python :: 3",
     "Operating System :: OS Independent",
 ]
+
+[project.urls]
+"Homepage" = "https://github.com/DarkskyX15/fasttk"
 
 [project.scripts]
 fasttk = "fasttk.dev:_console"
