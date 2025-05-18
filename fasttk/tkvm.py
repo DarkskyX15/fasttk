@@ -9,10 +9,10 @@ from uuid import UUID, uuid4 as random_uuid
 from typing import TypeVar, Coroutine, Any, Callable, Never
 
 from fasttk.style import COLORS
-from fasttk.aworker import AsyncWorker
+from fasttk.aworker import AsyncWorker, CallWrapper
 from fasttk.base import Component, Props, remove_buffers, _remove_all_components
 
-VERSION = "v0.2.3"
+VERSION = "v0.2.4"
 _T = TypeVar("_T")
 
 def _then(obj: Any) -> None:
@@ -145,11 +145,13 @@ class FastTk:
 
     def promise(
         self,
-        task: Coroutine[Any, Any, _T],
+        task: Coroutine[Any, Any, _T] | Callable[..., _T],
         then: Callable[[_T], Any] = _then,
         error: Callable[[Exception], Any] = _error,
+        args: tuple[Any, ...] | None = None,
+        kwargs: dict[str, Any] | None = None
     ) -> None:
-        return self._worker.run(task, then, error)
+        return self._worker.run(CallWrapper(task, args, kwargs), then, error)
 
     def mainloop(self) -> None:
         try:

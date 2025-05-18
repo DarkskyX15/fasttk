@@ -1,18 +1,55 @@
 
 import asyncio
 import logging
+import inspect
 from uuid import uuid4 as random_uuid, UUID
 from threading import Thread
 from queue import Queue as TQueue, Empty
-from typing import Coroutine, Callable, Any
+from typing import Coroutine, Callable, Any, Never
 from tkinter import Tk
 
 logger = logging.getLogger("FastTk.AsyncWorker")
 
+class CallWrapper:
+
+    _args: tuple[Any, ...]
+    _kwargs: dict[str, Any]
+    _func: Callable | Coroutine
+    _method: Callable[[], Coroutine[Any, Any, Any]]
+
+    def __init__(
+        self,
+        func: Callable | Coroutine,
+        args: tuple[Any, ...] | None,
+        kwargs: dict[str, Any] | None
+    ):
+        self._func = func
+        if inspect.iscoroutine(func):
+            self._method = self._coroutine_call
+        elif callable(func):
+            self._args = args or ()
+            self._kwargs = kwargs or {}
+            self._method = self._function_call
+        else:
+            self._method = self._fallback_call
+    
+    async def _function_call(self) -> Any:
+        return await asyncio.to_thread(self._func, *self._args, **self._kwargs)
+
+    async def _fallback_call(self) -> Never:
+        raise TypeError("Task is neither a callable or coroutine.")
+
+    async def _coroutine_call(self) -> Any:
+        return await self._func
+
+    def call(self) -> Coroutine[Any, Any, Any]:
+        return self._method()
+
+
 class AsyncWorker:
     
     _thread: Thread
-    _queue: TQueue[tuple[Coroutine, UUID] | None]
+    _queue: TQueue[tuple[CallWrapper, UUID] | None]
     _callback: TQueue[tuple[UUID, bool, Any] | None]
     _closed: bool
     _checker_id: str
@@ -62,7 +99,7 @@ class AsyncWorker:
                 break
             task, uuid = pack
             try:
-                result = await task
+                result = await task.call()
                 self._callback.put((uuid, True, result))
             except Exception as e:
                 self._callback.put((uuid, False, e))
@@ -91,7 +128,7 @@ class AsyncWorker:
             self._queue.put(None)
             self._thread.join()
 
-    def run(self, task: Coroutine, then: Callable, error: Callable) -> None:
+    def run(self, task: CallWrapper, then: Callable, error: Callable) -> None:
         uuid = random_uuid()
         self._mapping[uuid] = (then, error)
         self._queue.put((task, uuid))
