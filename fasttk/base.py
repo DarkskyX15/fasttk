@@ -303,7 +303,7 @@ class Node(ABC):
         if selector.check(self._node_type, self._node_tags):
             states = style["_states"]
             if (state_style := self._use_styles.get(states, None)) is None:
-                state_style = self._use_styles[("normal", )].copy()
+                state_style = {}
                 self._use_styles[states] = state_style
             state_style.update(style)
         for item in self._children:
@@ -316,7 +316,9 @@ class Node(ABC):
         normal_style = self._use_styles[("normal", )]
         normal_style.update(self._inline_style or {})
         for state, style in self._use_styles.items():
-            self._style_repr_map[state] = StyleRepr(style, parent_style)
+            updated = normal_style.copy()
+            updated.update(style)
+            self._style_repr_map[state] = StyleRepr(updated, parent_style)
         self._normal_repr = self._style_repr_map[("normal", )]
         for child in self._children:
             child.__vtk_repr_styles__(normal_style)
