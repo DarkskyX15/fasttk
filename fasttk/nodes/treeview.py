@@ -171,7 +171,7 @@ class TreeviewColumn:
             self._image = ImageTk.PhotoImage(photo)
         args = {}
         args["text"] = self._heading
-        args["anchor"] = _anchor_mapping.get(self._item_anchor, "center")
+        args["anchor"] = _anchor_mapping.get(self._head_anchor, "center")
         args["command"] = self.__click_hook__
         if self._image: args["image"] = self._image
         return args
