@@ -59,11 +59,11 @@ class TreeviewItem:
 
     @property
     def name(self) -> str:
-        return self["#0"]
+        return self._treeview._widget_instance.item(self._id, "text")
     
     @name.setter
     def name(self, value: str) -> None:
-        self["#0"] = value
+        self._treeview._widget_instance.item(self._id, text=value)
 
     @overload
     def tags(self) -> list[str]:
@@ -171,7 +171,7 @@ class TreeviewColumn:
             self._image = ImageTk.PhotoImage(photo)
         args = {}
         args["text"] = self._heading
-        args["anchor"] = _anchor_mapping.get(self._head_anchor, "center")
+        args["anchor"] = _anchor_mapping.get(self._item_anchor, "center")
         args["command"] = self.__click_hook__
         if self._image: args["image"] = self._image
         return args
