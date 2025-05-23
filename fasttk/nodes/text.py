@@ -119,9 +119,13 @@ class Text(Node):
     
     @text.setter
     def text(self, value: str) -> None:
+        if self._disabled:
+            self._widget_instance.configure(state="normal")
         self._widget_instance.delete("1.0", "end")
         size = len(value)
         index = 0
         while index < size:
             self._widget_instance.insert("end", value[index:index+128])
             index += 128
+        if self._disabled:
+            self._widget_instance.configure(state="disabled")

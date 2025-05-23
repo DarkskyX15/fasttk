@@ -121,7 +121,7 @@ class FastTk:
         title: str = "NewWindow",
         size: tuple[int, int] = (400, 300),
         background: COLORS = "white"
-    ) -> None:
+    ) -> Toplevel:
         props = props if props else Props()
         window_id = random_uuid()
         window = Toplevel(self._tk)
@@ -132,6 +132,7 @@ class FastTk:
         self._window_map[window_id] = window
         component = cp(props=props)
         self._mount_component(window, component)
+        return window
 
     def mount_component(
         self,

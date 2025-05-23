@@ -318,7 +318,7 @@ class Treeview(Node):
                 photo = photo.resize(size)
             use_image = ImageTk.PhotoImage(photo)
         new_id = self._widget_instance.insert(
-            parent_str, use_index, text=name, values=values, open=open,
+            parent_str, use_index, text=name or "_", values=values, open=open,
             tags=tags, image=use_image
         )
         item = TreeviewItem(new_id, self, use_image)
@@ -494,7 +494,7 @@ class Treeview(Node):
 
     @selection.setter
     def selection(self, items: Iterable[TreeviewItem]) -> None:
-        self._widget_instance.selection_set((item._id for item in items))
+        self._widget_instance.selection_set(*(item._id for item in items))
 
     @property
     def focus(self) -> TreeviewItem | None:

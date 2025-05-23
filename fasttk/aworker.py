@@ -91,18 +91,21 @@ class AsyncWorker:
         else:
             self._checker_id = self._root.after_idle(self.checker)
 
+    async def _subtask_wrapper(self, pack: tuple[CallWrapper, UUID], cb: TQueue):
+        task, uuid = pack
+        try:
+            result = await task.call()
+            cb.put((uuid, True, result))
+        except Exception as e:
+            cb.put((uuid, False, e))
+
     async def _async_worker(self):
         while True:
             pack = await asyncio.to_thread(self._queue.get)
             self._queue.task_done()
             if not pack:
                 break
-            task, uuid = pack
-            try:
-                result = await task.call()
-                self._callback.put((uuid, True, result))
-            except Exception as e:
-                self._callback.put((uuid, False, e))
+            asyncio.create_task(self._subtask_wrapper(pack, self._callback))
 
     def _entrance(self):
         logger = logging.getLogger("FastTk.AsyncWorker.Thread")

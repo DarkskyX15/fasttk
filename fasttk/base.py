@@ -146,6 +146,7 @@ class Component(ABC):
                 self.__vtk_component_styles__.extend(style)
             elif isinstance(style, dict):
                 self.__vtk_component_styles__.append(style)
+        self.__vtk_component_node__.__vtk_build__()
 
     # Step 2
     def __vtk_set_ref__(self, obj: object) -> None:
@@ -175,11 +176,7 @@ class Component(ABC):
             else:
                 style["_states"] = ("normal", )
         
-        for style in styles:
-            selector = style.get("_selector", "")
-            if not selector: continue
-            selector = Selector(selector)
-            struct.__vtk_apply_style__(selector, style)
+        struct.__vtk_apply_style__(styles)
 
     # Step 4
     def __vtk_repr_styles__(self, parent_style: Style) -> None:
@@ -299,16 +296,21 @@ class Node(ABC):
         for child in self._children:
             child.__vtk_set_ref__(obj)
 
-    def __vtk_apply_style__(self, selector: Selector, style: Style) -> None:
-        if selector.check(self._node_type, self._node_tags):
-            states = style["_states"]
-            if (state_style := self._use_styles.get(states, None)) is None:
-                state_style = {}
-                self._use_styles[states] = state_style
-            state_style.update(style)
+    def __vtk_apply_style__(self, styles: list[Style]) -> None:
+        for style in styles:
+            selector = style.get("_selector", "")
+            if not selector: continue
+            selector = Selector(selector)
+
+            if selector.check(self._node_type, self._node_tags):
+                states = style["_states"]
+                if (state_style := self._use_styles.get(states, None)) is None:
+                    state_style = {}
+                    self._use_styles[states] = state_style
+                state_style.update(style)
         for item in self._children:
             if isinstance(item, Node):
-                item.__vtk_apply_style__(selector, style)
+                item.__vtk_apply_style__(styles)
             else:
                 item.__vtk_apply_styles__()
 

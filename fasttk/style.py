@@ -517,8 +517,8 @@ class StyleRepr:
 
     def extract_margin(self, style: Style) -> None:
         margin = self.extract_padding(style, "margin")
-        self.margin_x = (margin[3], margin[1])
-        self.margin_y = (margin[0], margin[2])
+        self.margin_x = (margin[0], margin[2])
+        self.margin_y = (margin[1], margin[3])
     
     def extract_padding(self, style: Style, prefix: str) -> tuple[int, int, int, int]:
         padding = style.get(prefix, (0, 0, 0, 0))
