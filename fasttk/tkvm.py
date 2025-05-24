@@ -10,7 +10,9 @@ from typing import TypeVar, Coroutine, Any, Callable, Never
 
 from fasttk.style import COLORS
 from fasttk.aworker import AsyncWorker, CallWrapper
-from fasttk.base import Component, Props, remove_buffers, _remove_all_components
+from fasttk.base import (
+    Component, Props, remove_buffers, _remove_all_components, Node
+)
 
 VERSION = "v0.2.8"
 _T = TypeVar("_T")
@@ -47,7 +49,7 @@ class FastTk:
         component.__vtk_set_ref__(obj)
         component.__vtk_apply_styles__()
         component.__vtk_repr_styles__(
-            {} if isinstance(obj, (Toplevel, Tk)) else obj.node._use_style
+            {} if isinstance(obj, (Toplevel, Tk)) else obj.node._use_styles[("normal", )]
         )
         component.__vtk_build_widgets__(
             obj, component,
@@ -136,11 +138,13 @@ class FastTk:
 
     def mount_component(
         self,
-        obj: Tk | Toplevel | Widget,
+        obj: Tk | Toplevel | Widget | Node,
         cp: type[Component],
         props: Props | None = None,
     ) -> Component:
         component = cp(props=props or Props())
+        if isinstance(obj, Node):
+            obj = obj._widget_instance
         self._mount_component(obj, component)
         return component
 
