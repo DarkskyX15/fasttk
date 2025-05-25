@@ -14,7 +14,7 @@ from fasttk.base import (
     Component, Props, remove_buffers, _remove_all_components, Node
 )
 
-VERSION = "v0.2.8"
+VERSION = "v0.2.9"
 _T = TypeVar("_T")
 
 def _then(obj: Any) -> None:
